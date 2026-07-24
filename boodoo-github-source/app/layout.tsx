@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
 const title = "BooDoo - Evidence-Based Baby Tracking";
