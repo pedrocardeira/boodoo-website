@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { GoogleAnalytics } from "@next/third-parties/google";
+
 import "./globals.css";
 
 const title = "BooDoo - Evidence-Based Baby Tracking";
