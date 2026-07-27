@@ -194,7 +194,7 @@ export default function Home() {
           <Reveal className="max-w-2xl">
             <div className="mb-7 inline-flex items-center gap-3 rounded-full border border-[#ffd9dd] bg-white/78 px-4 py-2 text-sm font-extrabold text-[#ff5865] shadow-sm">
               <Image src="/icons/boodoo-icon.png" alt="" width={26} height={26} className="rounded-lg" />
-              BooDoo Pro for iPhone and iPad
+              for iPhone and iPad
             </div>
             <h1 className="max-w-3xl text-5xl font-black leading-[0.95] tracking-normal text-[#2f2f3d] sm:text-6xl lg:text-7xl">
               The baby tracker that explains what the data means.
