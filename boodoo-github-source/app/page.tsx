@@ -7,7 +7,6 @@ import {
   Droplets,
   Moon,
   Scale,
-  Send,
   ShieldCheck,
   Stethoscope,
   Target,
@@ -15,6 +14,7 @@ import {
 } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 import { Reveal } from "@/components/reveal";
+import { QuestionForm } from "@/components/question-form";
 
 const appStoreUrl = "https://apps.apple.com/us/app/boodoo/id6784456363";
 
@@ -153,9 +153,9 @@ export default function Home() {
     "@type": "SoftwareApplication",
     name: "BooDoo",
     applicationCategory: "HealthApplication",
-    operatingSystem: "iOS",
+    operatingSystem: "iOS, iPadOS",
     description:
-      "An evidence-based baby tracker for feeds, sleep, diapers, growth, reports, and trusted medical guidance.",
+      "An evidence-based baby tracker optimized for iPhone and iPad with feeds, sleep, diapers, growth, reports, and trusted medical guidance.",
     offers: [
       { "@type": "Offer", name: "BooDoo Free", price: "0", priceCurrency: "USD" },
       { "@type": "Offer", name: "BooDoo Pro", priceCurrency: "USD" }
@@ -194,13 +194,13 @@ export default function Home() {
           <Reveal className="max-w-2xl">
             <div className="mb-7 inline-flex items-center gap-3 rounded-full border border-[#ffd9dd] bg-white/78 px-4 py-2 text-sm font-extrabold text-[#ff5865] shadow-sm">
               <Image src="/icons/boodoo-icon.png" alt="" width={26} height={26} className="rounded-lg" />
-              BooDoo Pro
+              BooDoo Pro for iPhone and iPad
             </div>
             <h1 className="max-w-3xl text-5xl font-black leading-[0.95] tracking-normal text-[#2f2f3d] sm:text-6xl lg:text-7xl">
               The baby tracker that explains what the data means.
             </h1>
             <p className="mt-7 max-w-xl text-lg font-medium leading-8 text-[#696875] sm:text-xl">
-              Set goals and track feeds, sleep, diapers, growth and milestones in seconds. Trusted medical guidance is built into every recommendation and adapted to your baby's age.
+              Set goals and track feeds, sleep, diapers, growth and milestones in seconds. BooDoo is optimized for iPhone and iPad, with trusted medical guidance built into every recommendation and adapted to your baby's age.
             </p>
             <div id="download" className="mt-9 flex flex-col gap-3 sm:flex-row">
               <ButtonLink href={appStoreUrl} className="bg-[#ff5865] px-7 shadow-[0_22px_54px_rgba(255,88,101,0.28)] hover:bg-[#e24752]">
@@ -215,7 +215,7 @@ export default function Home() {
               {[
                 ["1 Tap", "Everything Logged"],
                 ["Trusted Medical Guidance", "Built In"],
-                ["Unlimited History", "With Pro"]
+                ["Notifications", "Never miss feed and sleep times"]
               ].map(([value, label]) => (
                 <div key={value} className="rounded-[1.6rem] bg-white/74 p-4 shadow-[0_18px_48px_rgba(48,48,61,0.07)]">
                   <dt className="text-lg font-black leading-tight text-[#ff5865] sm:text-xl">{value}</dt>
@@ -265,7 +265,7 @@ export default function Home() {
             <div>
               <h2 className="text-4xl font-black tracking-normal sm:text-5xl">Stop guessing. Start understanding.</h2>
               <p className="mt-4 max-w-2xl text-base font-semibold leading-7 text-white/82">
-                Track feeds, sleep, diapers and growth with trusted medical guidance built into every day.
+                Track feeds, sleep, diapers and growth on iPhone and iPad with trusted medical guidance built into every day.
               </p>
             </div>
             <ButtonLink href={appStoreUrl} variant="secondary" className="bg-white px-7 text-[#30303d]">
@@ -315,9 +315,11 @@ export default function Home() {
           </Reveal>
         </div>
         <div className="scrollbar-none mt-12 flex gap-6 overflow-x-auto px-5 pb-8 sm:px-8">
-          {screenshots.map((shot) => (
+          {screenshots.slice(0, -1).map((shot) => (
             <article key={shot.src} className="w-[18.5rem] shrink-0">
               <PhoneFrame src={shot.src} title={shot.title} />
+              <h3 className="mt-5 text-lg font-black text-[#30303d]">{shot.title}</h3>
+              <p className="mt-1 text-sm font-semibold leading-6 text-[#74727e]">{shot.caption}</p>
             </article>
           ))}
         </div>
@@ -484,53 +486,7 @@ export default function Home() {
           </p>
         </Reveal>
         <Reveal delay={0.04}>
-          <form
-            action="https://formsubmit.co/support@boodoo.app"
-            method="post"
-            className="mt-10 rounded-[2rem] border border-[#f4d5d8] bg-white p-6 shadow-[0_24px_70px_rgba(48,48,61,0.07)]"
-          >
-            <input type="hidden" name="_subject" value="New BooDoo question" />
-            <input type="hidden" name="_template" value="table" />
-            <input type="hidden" name="_captcha" value="false" />
-            <input type="hidden" name="_next" value="https://boodoo.app/#faq" />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="grid gap-2 text-sm font-black text-[#30303d]">
-                Name
-                <input
-                  name="name"
-                  type="text"
-                  autoComplete="name"
-                  className="min-h-12 rounded-2xl border border-[#f4d5d8] bg-[#f7f6f4] px-4 text-base font-semibold text-[#30303d] outline-none transition focus:border-[#ff5865] focus:bg-white"
-                />
-              </label>
-              <label className="grid gap-2 text-sm font-black text-[#30303d]">
-                Email
-                <input
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="min-h-12 rounded-2xl border border-[#f4d5d8] bg-[#f7f6f4] px-4 text-base font-semibold text-[#30303d] outline-none transition focus:border-[#ff5865] focus:bg-white"
-                />
-              </label>
-            </div>
-            <label className="mt-4 grid gap-2 text-sm font-black text-[#30303d]">
-              Question
-              <textarea
-                name="question"
-                rows={5}
-                required
-                className="resize-none rounded-2xl border border-[#f4d5d8] bg-[#f7f6f4] px-4 py-3 text-base font-semibold leading-7 text-[#30303d] outline-none transition focus:border-[#ff5865] focus:bg-white"
-              />
-            </label>
-            <button
-              type="submit"
-              className="mt-5 inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-[#ff5865] px-7 text-sm font-black text-white shadow-[0_18px_45px_rgba(255,88,101,0.24)] transition hover:bg-[#e24752] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#ff5865]"
-            >
-              <Send size={17} aria-hidden />
-              Send question
-            </button>
-          </form>
+          <QuestionForm />
         </Reveal>
       </section>
 
