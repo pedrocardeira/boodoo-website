@@ -32,6 +32,17 @@ export default function SeoResourceLinks() {
             </Link>
           ))}
         </div>
+        <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-[#f1d7da] pt-7 text-sm font-black">
+          <span className="text-[#74727e]">Trust and transparency:</span>
+          <Link href="/about" className="inline-flex items-center gap-2 text-[#ff5865] hover:text-[#e24752]">
+            About BooDoo
+            <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+          <Link href="/medical-sources" className="inline-flex items-center gap-2 text-[#ff5865] hover:text-[#e24752]">
+            Medical sources and disclaimer
+            <ArrowRight size={16} aria-hidden="true" />
+          </Link>
+        </div>
       </div>
     </section>
   );
