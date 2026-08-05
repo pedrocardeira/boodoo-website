@@ -7,10 +7,16 @@ const title = "BooDoo Baby Tracker | Feeding, Sleep & Growth App";
 const description =
   "Track your newborn’s feeding, sleep, poop and growth in seconds. BooDoo turns daily logs into clear, age-adapted insights, goals and reminders.";
 
-export const metadata: Metadata = {
+
+  export const metadata: Metadata = {
   metadataBase: new URL("https://www.boodoo.app"),
   title,
   description,
+
+  itunes: {
+    appId: "6784456363"
+  },
+
   alternates: {
     canonical: "/"
   },
