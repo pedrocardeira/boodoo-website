@@ -2,8 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
-const title = "BooDoo - Evidence-Based Baby Tracking";
-const description = "Track feeds, sleep, diapers, growth and milestones with BooDoo, now optimized for iPhone and iPad with trusted medical guidance built into every recommendation.";
+const title = "BooDoo Baby Tracker | Feeding, Sleep & Growth App";
+
+const description =
+  "Track your newborn’s feeding, sleep, poop and growth in seconds. BooDoo turns daily logs into clear, age-adapted insights, goals and reminders.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://boodoo.app"),
