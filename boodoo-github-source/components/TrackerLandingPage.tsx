@@ -15,13 +15,13 @@ function structuredData(page: TrackerPageContent) {
           "@type": "ListItem",
           position: 1,
           name: "BooDoo",
-          item: "https://boodoo.app/"
+          item: "https://www.boodoo.app/"
         },
         {
           "@type": "ListItem",
           position: 2,
           name: page.eyebrow,
-          item: `https://boodoo.app/${page.slug}`
+          item: `https://www.boodoo.app/${page.slug}`
         }
       ]
     },

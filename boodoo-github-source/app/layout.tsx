@@ -8,7 +8,7 @@ const description =
   "Track your newborn’s feeding, sleep, poop and growth in seconds. BooDoo turns daily logs into clear, age-adapted insights, goals and reminders.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://boodoo.app"),
+  metadataBase: new URL("https://www.boodoo.app"),
   title,
   description,
   alternates: {
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   openGraph: {
     title,
     description,
-    url: "https://boodoo.app",
+    url: "https://www.boodoo.app",
     siteName: "BooDoo",
     images: [
       {

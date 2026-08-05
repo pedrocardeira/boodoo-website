@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: page.metadataTitle,
     description: page.description,
-    url: `https://boodoo.app/${page.slug}`,
+    url: `https://www.boodoo.app/${page.slug}`,
     siteName: "BooDoo",
     images: [{ url: page.image, width: 1242, height: 2688, alt: page.imageAlt }],
     locale: "en_US",

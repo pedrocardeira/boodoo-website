@@ -6,7 +6,7 @@ const title = "BooDoo - Evidence-Based Baby Tracking";
 const description = "Track feeds, sleep, diapers, growth and milestones with BooDoo, now optimized for iPhone and iPad with trusted medical guidance built into every recommendation.";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://boodoo.app"),
+  metadataBase: new URL("https://www.boodoo.app"),
   title,
   description,
   alternates: {
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   openGraph: {
     title,
     description,
-    url: "https://boodoo.app",
+    url: "https://www.boodoo.app",
     siteName: "BooDoo",
     images: [
       {

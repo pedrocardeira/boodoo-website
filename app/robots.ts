@@ -8,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: "*",
       allow: "/"
     },
-    sitemap: "https://boodoo.app/sitemap.xml"
+    sitemap: "https://www.boodoo.app/sitemap.xml"
   };
 }
