@@ -15,7 +15,7 @@ import {
 import { ButtonLink } from "@/components/ui/button";
 import { Reveal } from "@/components/reveal";
 import { QuestionForm } from "@/components/question-form";
-
+import SeoResourceLinks from "@/components/SeoResourceLinks";
 const appStoreUrl = "https://apps.apple.com/us/app/boodoo/id6784456363";
 
 const features = [
@@ -470,7 +470,7 @@ export default function Home() {
           </div>
         </div>
       </section>
-
+   <SeoResourceLinks />
       <section id="faq" className="mx-auto max-w-5xl px-5 py-20 sm:px-8">
         <Reveal className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-black uppercase tracking-[0.16em] text-[#ff5865]">FAQ</p>
