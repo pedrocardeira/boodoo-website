@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { allTrackerPages } from "../lib/tracker-pages";
+import { allTrafficPages } from "../lib/traffic-pages";
 
 export const dynamic = "force-static";
 
@@ -19,6 +20,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly" as const,
       priority: page.slug === "newborn-tracker" ? 0.9 : 0.8
     })),
+    ...allTrafficPages.map((page) => ({
+      url: `https://www.boodoo.app/${page.slug}`,
+      lastModified,
+      changeFrequency: "monthly" as const,
+      priority: 0.8
+    })),
+    {
+      url: "https://www.boodoo.app/best-baby-tracker-apps",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.8
+    },
+    {
+      url: "https://www.boodoo.app/baby-feeding-log-template",
+      lastModified,
+      changeFrequency: "monthly",
+      priority: 0.8
+    },
     {
       url: "https://www.boodoo.app/about",
       lastModified,
