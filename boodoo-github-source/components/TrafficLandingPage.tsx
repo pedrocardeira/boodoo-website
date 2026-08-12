@@ -42,6 +42,24 @@ function structuredData(page: TrafficPageContent) {
           text: item.answer
         }
       }))
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: page.metadataTitle,
+      description: page.description,
+      image: "https://www.boodoo.app/screenshots/01-dashboard-photo-sources.png",
+      mainEntityOfPage: `https://www.boodoo.app/${page.slug}`,
+      author: {
+        "@type": "Person",
+        name: "José Cardeira",
+        url: "https://www.boodoo.app/about"
+      },
+      publisher: {
+        "@type": "Organization",
+        name: "BooDoo",
+        url: "https://www.boodoo.app/"
+      }
     }
   ];
 }
@@ -200,9 +218,9 @@ export default function TrafficLandingPage({ page }: { page: TrafficPageContent 
       {page.externalSources?.length ? (
         <section className="bg-white py-14">
           <div className="mx-auto max-w-5xl px-5 sm:px-8">
-            <h2 className="text-2xl font-black text-[#30303d]">Check the current source</h2>
+            <h2 className="text-2xl font-black text-[#30303d]">Sources and further reading</h2>
             <p className="mt-3 max-w-3xl font-medium leading-7 text-[#74727e]">
-              Competitor plans and features change. We link directly to the current official information.
+              Review the current information from the official sources linked below. Guidance and product features can change over time.
             </p>
             <div className="mt-5 flex flex-col gap-3">
               {page.externalSources.map((source) => (
