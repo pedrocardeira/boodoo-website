@@ -251,6 +251,426 @@ export const trafficPages = {
         href: "https://huckleberrycare.com/pricing"
       }
     ]
+  },
+  newbornChecklist: {
+    slug: "what-to-track-for-a-newborn",
+    metadataTitle: "What to Track for a Newborn: Simple Checklist | BooDoo",
+    description:
+      "Learn what is useful to track for a newborn—feeding, diapers, sleep and growth—without turning every day into a spreadsheet.",
+    eyebrow: "What to track for a newborn",
+    title: "Track the details that help—not every detail possible.",
+    intro:
+      "A simple newborn record can answer practical questions during a tired week: when your baby last fed, how sleep is spread across the day, how diaper output is changing and what to mention at the next appointment.",
+    highlights: [
+      {
+        title: "Start with four basics",
+        text: "Feeding, diapers, sleep and growth usually provide the clearest daily picture."
+      },
+      {
+        title: "Record facts, not diagnoses",
+        text: "A log supports memory and conversations; it cannot determine whether a baby is healthy."
+      },
+      {
+        title: "Keep it sustainable",
+        text: "Choose a level of detail that remains manageable during feeds and night waking."
+      }
+    ],
+    sections: [
+      {
+        title: "The four things most families find useful",
+        paragraphs: [
+          "Newborn care repeats quickly, and the events can blur together. A useful record begins with feeding, diapers, sleep and growth rather than a long list of optional measurements.",
+          "You do not need perfect data. A consistent, simple log is more useful than a complicated system that is abandoned after two days."
+        ],
+        bullets: [
+          "Feeding type, start time and amount or duration",
+          "Wet, dirty or mixed diaper changes",
+          "Sleep start and wake time",
+          "Weight and length measured by a professional",
+          "Short notes about questions for your clinician",
+          "Medicines only according to professional instructions"
+        ]
+      },
+      {
+        title: "What to record about feeding",
+        paragraphs: [
+          "For breastfeeding, parents may record the start time, duration and breast used when that information is helpful. For bottles, the time and amount offered or taken are usually the most practical details. Pumping can be kept separately so expressed milk is not confused with milk the baby actually drank.",
+          "Feeding needs vary with age, birth history, growth and feeding method. Use the plan agreed with your pediatrician, midwife or feeding specialist rather than changing feeds to make the log look more regular."
+        ]
+      },
+      {
+        title: "Why diapers belong beside feeds",
+        paragraphs: [
+          "Wet and dirty diapers give useful context to a feeding record. Logging both in the same place can help a parent describe changes clearly instead of relying on memory.",
+          "Output changes during the first days of life and differs between breastfed and formula-fed babies. A log can reveal a change, but only a qualified professional can interpret it for an individual newborn."
+        ]
+      },
+      {
+        title: "Track sleep without turning it into a target",
+        paragraphs: [
+          "Newborn sleep is fragmented and highly variable. Record when sleep begins and ends if the information helps with handovers or gives you a clearer 24-hour view, but do not expect a newborn chart to resemble an adult schedule.",
+          "Tracking never changes safe-sleep practice: place babies on their back on a firm, flat sleep surface, and keep soft bedding and toys out of the sleep space."
+        ]
+      },
+      {
+        title: "Growth and the notes worth keeping",
+        paragraphs: [
+          "Growth is best understood as a trend using accurate measurements, not as a single home number. Keep dates and measurements from health appointments together so the professional following your baby can interpret them on an appropriate growth chart.",
+          "A short note can also preserve a question you want to ask. If tracking increases anxiety or becomes compulsive, simplify it or pause and discuss the concern with a healthcare professional."
+        ]
+      }
+    ],
+    faq: [
+      {
+        question: "Do I need to track everything my newborn does?",
+        answer:
+          "No. Many families only need feeding, diapers and sleep for a limited period. Track what has a clear practical purpose for your household or healthcare plan."
+      },
+      {
+        question: "How detailed should a newborn feeding log be?",
+        answer:
+          "Usually the feeding type, time, duration or amount and an optional short note are enough. Follow any additional instructions given for your baby."
+      },
+      {
+        question: "Should I record every nap?",
+        answer:
+          "Only if it is useful. A full sleep record can help show the 24-hour pattern, but it should not add unnecessary stress."
+      },
+      {
+        question: "Can a baby tracker tell me whether my newborn is healthy?",
+        answer:
+          "No. A tracker organizes observations. Concerns about feeding, hydration, breathing, temperature, growth or behavior require professional medical advice."
+      }
+    ],
+    externalSources: [
+      {
+        label: "American Academy of Pediatrics: how often and how much babies eat",
+        href: "https://www.healthychildren.org/English/ages-stages/baby/feeding-nutrition/Pages/how-often-and-how-much-should-your-baby-eat.aspx"
+      },
+      {
+        label: "CDC: helping babies sleep safely",
+        href: "https://www.cdc.gov/reproductive-health/features/babies-sleep.html"
+      },
+      {
+        label: "WHO: child growth standards",
+        href: "https://www.who.int/tools/child-growth-standards"
+      }
+    ]
+  },
+  feedingDiaperLog: {
+    slug: "newborn-feeding-and-diaper-log",
+    metadataTitle: "Newborn Feeding and Diaper Log: What to Record | BooDoo",
+    description:
+      "Use a simple newborn feeding and diaper log to record breastfeeds, bottles, wet diapers and stools, with a practical printable-style checklist.",
+    eyebrow: "Newborn feeding and diaper log",
+    title: "Keep feeds and diapers together so the day makes sense.",
+    intro:
+      "A combined feeding and diaper log makes it easier to answer two everyday questions: what went in, and what happened afterward. The goal is a clear record—not a scorecard for your baby.",
+    highlights: [
+      {
+        title: "One connected timeline",
+        text: "View breastfeeds, bottles and diaper changes in the order they happened."
+      },
+      {
+        title: "Easy caregiver handovers",
+        text: "The next caregiver can see the latest feed and change without guessing."
+      },
+      {
+        title: "Useful appointment notes",
+        text: "Bring a concise pattern and your questions instead of reconstructing several days."
+      }
+    ],
+    sections: [
+      {
+        title: "What each row of the log should contain",
+        paragraphs: [
+          "A newborn log works best when an entry takes only a few seconds. Use one row per feed or diaper change and keep optional notes short.",
+          "Record the event when it happens when possible. If you add it later, an approximate time is still better than inventing detail you do not remember."
+        ],
+        bullets: [
+          "Date and time",
+          "Breast, expressed milk or formula",
+          "Breastfeeding duration or bottle amount",
+          "Wet, dirty or mixed diaper",
+          "Optional stool color or brief observation",
+          "A note only when something needs follow-up"
+        ]
+      },
+      {
+        title: "How diaper output adds context",
+        paragraphs: [
+          "The American Academy of Pediatrics notes that wet-diaper counts change across the first days after birth. Its general guidance describes two to three wet diapers per day in the earliest days and at least five to six per day after day four or five, while stool frequency varies more by feeding method and age.",
+          "Those figures are educational context, not a diagnosis or a personalized target. Prematurity, illness, feeding difficulties and an individual care plan can change what your clinical team expects."
+        ]
+      },
+      {
+        title: "How to review the log without overreacting",
+        paragraphs: [
+          "Look for a clear change from your baby’s recent pattern rather than judging one isolated feed or diaper. Add a short factual note and contact the professional responsible for your baby when you are concerned.",
+          "Do not delay medical help while waiting to collect more data. A log supports a conversation; it is not a test that has to be completed first."
+        ]
+      },
+      {
+        title: "Paper, notes app or baby tracker?",
+        paragraphs: [
+          "Paper is excellent for a temporary bedside log and is easy to share in the room. A phone tracker becomes more useful when several days need to be summarized, intervals are hard to calculate or more than one caregiver needs the latest information.",
+          "Choose the method you will actually use. BooDoo keeps feeding, diapers, sleep and growth in one record and calculates useful timing from the entries you make."
+        ]
+      },
+      {
+        title: "Questions the record can help you ask",
+        paragraphs: [
+          "A clear log helps turn a vague concern into a specific question: feeding sessions have become shorter, wet diapers changed from the recent pattern, or the baby is difficult to wake for feeds.",
+          "Urgent warning signs vary by age and situation. Contact an appropriate healthcare service promptly whenever you are worried about hydration, breathing, fever, unusual sleepiness, repeated vomiting or feeding."
+        ]
+      }
+    ],
+    faq: [
+      {
+        question: "What should I include in a newborn feeding and diaper log?",
+        answer:
+          "Record the time, feeding type, duration or amount, and whether each diaper was wet, dirty or mixed. Add notes only when useful."
+      },
+      {
+        question: "Should I count wet and dirty diapers separately?",
+        answer:
+          "Yes. Separate categories make the record easier to describe. A diaper containing both can be marked as mixed."
+      },
+      {
+        question: "How long should I keep a newborn log?",
+        answer:
+          "There is no universal duration. Some families use it during the early weeks; others continue when a clinician asks for a record or multiple caregivers need it."
+      },
+      {
+        question: "Does a low diaper count mean my baby is dehydrated?",
+        answer:
+          "A change can be important, but a tracker cannot diagnose dehydration. Contact a qualified healthcare professional promptly if you are concerned."
+      }
+    ],
+    externalSources: [
+      {
+        label: "American Academy of Pediatrics: feeding amounts and daily diapers",
+        href: "https://www.healthychildren.org/English/ages-stages/baby/feeding-nutrition/Pages/how-often-and-how-much-should-your-baby-eat.aspx"
+      },
+      {
+        label: "WHO: infant and young child feeding",
+        href: "https://www.who.int/news-room/fact-sheets/detail/infant-and-young-child-feeding"
+      },
+      {
+        label: "BooDoo: printable baby feeding log",
+        href: "https://www.boodoo.app/baby-feeding-log-template"
+      }
+    ]
+  },
+  wakeWindows: {
+    slug: "baby-wake-windows-by-age",
+    metadataTitle: "Baby Wake Windows by Age: A Flexible Guide | BooDoo",
+    description:
+      "Understand baby wake windows by age, why exact schedules vary, and how to combine sleepy cues with a simple 24-hour sleep record.",
+    eyebrow: "Baby wake windows by age",
+    title: "Use wake windows as observations—not deadlines.",
+    intro:
+      "A wake window is simply the time between one sleep period ending and the next beginning. It can help describe a pattern, but it is not a medical threshold and no single timetable fits every baby.",
+    highlights: [
+      {
+        title: "Age changes the pattern",
+        text: "Awake periods usually become more organized as sleep matures during the first years."
+      },
+      {
+        title: "Cues still matter",
+        text: "Behavior, feeding and the day’s previous sleep add context that a timer cannot provide."
+      },
+      {
+        title: "Total sleep comes first",
+        text: "Review sleep across 24 hours rather than optimizing one interval in isolation."
+      }
+    ],
+    sections: [
+      {
+        title: "What wake windows can and cannot tell you",
+        paragraphs: [
+          "Wake windows are popular because they give parents a simple way to describe time awake. They can help you notice that a baby tends to settle after a similar sequence of feeding, interaction and quiet time.",
+          "They cannot prove why a baby is unsettled, diagnose a sleep problem or guarantee a nap. Growth spurts, illness, travel, feeding and normal development can all change the pattern."
+        ]
+      },
+      {
+        title: "A flexible age-by-age view",
+        paragraphs: [
+          "During the newborn months, sleep and waking are usually spread across day and night, and awake periods often contain little more than feeding, changing and brief interaction. Under four months, variation is so wide that the American Academy of Sleep Medicine does not publish a formal total-sleep recommendation.",
+          "From four to twelve months, sleep often becomes more organized, but naps and awake periods continue to change. The AASM recommends 12 to 16 hours of total sleep per 24 hours, including naps, for this age group. From one to two years, its recommendation is 11 to 14 hours, including naps."
+        ],
+        bullets: [
+          "Birth to 3 months: expect irregular sleep and brief, variable awake periods",
+          "4 to 6 months: daytime patterns may become easier to observe",
+          "7 to 12 months: longer awake periods and changing naps are common",
+          "12 to 24 months: daytime sleep often consolidates gradually",
+          "After illness or travel: expect temporary changes",
+          "At every age: use the whole day and your baby’s behavior as context"
+        ]
+      },
+      {
+        title: "How to identify your baby’s actual pattern",
+        paragraphs: [
+          "Record sleep start and end times for several ordinary days. BooDoo can calculate the awake interval between those entries, letting you compare your baby with their own recent pattern instead of a rigid internet chart.",
+          "Look at the sequence as well as the number: when the last nap ended, whether feeding is due, how stimulating the environment has been and whether sleepy behavior is appearing."
+        ]
+      },
+      {
+        title: "Sleepy cues and overtired behavior",
+        paragraphs: [
+          "Reduced engagement, staring away, quieter movement, rubbing the face or fussiness may occur around sleep, but no individual cue is perfectly reliable. Hunger, discomfort and illness can look similar.",
+          "Begin a calm routine when the pattern and behavior suggest sleep may be approaching. If a baby does not settle, respond to the baby rather than forcing the clock."
+        ]
+      },
+      {
+        title: "Safe sleep is never replaced by a schedule",
+        paragraphs: [
+          "Whatever time a nap begins, safe-sleep guidance remains the same: place babies on their back on a firm, flat surface intended for infant sleep and keep pillows, blankets, bumpers and soft toys out of the sleep area.",
+          "Speak with a pediatrician or qualified health professional about persistent sleep concerns, breathing problems, unusual difficulty waking, poor feeding or growth."
+        ]
+      }
+    ],
+    faq: [
+      {
+        question: "What is a baby wake window?",
+        answer:
+          "It is the elapsed time from waking at the end of one sleep period until the beginning of the next."
+      },
+      {
+        question: "Are wake windows scientifically fixed by age?",
+        answer:
+          "No. They are practical observations, not universal medical thresholds. Sleep needs and daily patterns vary between babies."
+      },
+      {
+        question: "Should I wake my baby to maintain a wake-window schedule?",
+        answer:
+          "Do not change sleep or feeding solely to match an online schedule. Follow the care plan given for your baby and ask a qualified professional when unsure."
+      },
+      {
+        question: "What matters more: wake windows or total sleep?",
+        answer:
+          "Both can describe the day, but established professional recommendations focus on total sleep across 24 hours rather than exact wake-window targets."
+      }
+    ],
+    externalSources: [
+      {
+        label: "American Academy of Sleep Medicine: child sleep duration advisory",
+        href: "https://aasm.org/advocacy/position-statements/child-sleep-duration-health-advisory/"
+      },
+      {
+        label: "CDC: helping babies sleep safely",
+        href: "https://www.cdc.gov/reproductive-health/features/babies-sleep.html"
+      },
+      {
+        label: "BooDoo: baby sleep tracker",
+        href: "https://www.boodoo.app/baby-sleep-tracker"
+      }
+    ]
+  },
+  feedingAndSleep: {
+    slug: "how-to-track-baby-feeding-and-sleep",
+    metadataTitle: "How to Track Baby Feeding and Sleep | BooDoo",
+    description:
+      "Learn how to track baby feeding and sleep in one simple timeline, what details to record and how to review patterns without chasing perfection.",
+    eyebrow: "How to track baby feeding and sleep",
+    title: "Build one timeline that another tired caregiver can understand.",
+    intro:
+      "Feeding and sleep influence the shape of a baby’s day, but the log should remain simple. Record the facts you will use, review them in context and leave diagnosis to qualified professionals.",
+    highlights: [
+      {
+        title: "Log in the moment",
+        text: "A quick entry is easier and usually more accurate than reconstructing the day at night."
+      },
+      {
+        title: "Connect feeds and sleep",
+        text: "A shared timeline shows what happened before and after each rest period."
+      },
+      {
+        title: "Review patterns weekly",
+        text: "Several ordinary days provide more context than one unusually difficult night."
+      }
+    ],
+    sections: [
+      {
+        title: "Decide why you are tracking",
+        paragraphs: [
+          "A clear purpose prevents the log from expanding endlessly. You may want easier caregiver handovers, a reminder of the last feed, a 24-hour sleep view or a short record requested by a healthcare professional.",
+          "Choose only the fields needed for that purpose. You can always add detail later, but a complicated routine is difficult to sustain."
+        ]
+      },
+      {
+        title: "Record feeding consistently",
+        paragraphs: [
+          "For breastfeeds, record the start time and duration, with the breast used if that helps your routine. For bottles, record the time and amount taken. Keep pumping entries distinct from feeds so milk expressed is not mistaken for milk consumed.",
+          "Do not compare feeding methods as though one set of numbers should look like another. Follow responsive feeding and the individualized advice provided for your baby."
+        ],
+        bullets: [
+          "Time the feed started",
+          "Breast, expressed milk or formula",
+          "Duration or amount",
+          "Optional note when something changed",
+          "No pressure to make every interval identical",
+          "Professional advice takes priority over the app"
+        ]
+      },
+      {
+        title: "Record sleep as start and end times",
+        paragraphs: [
+          "Mark when sleep begins and when the baby wakes. Those two facts allow a tracker to calculate duration, total sleep and the awake interval without asking you to do mental arithmetic at night.",
+          "Record naps and night sleep in the same 24-hour view. The distinction can still be useful, but babies do not always organize sleep according to the labels adults use."
+        ]
+      },
+      {
+        title: "Review several days, not one event",
+        paragraphs: [
+          "Look for a repeated sequence across several ordinary days: feeds becoming easier or harder, sleep shifting later, or caregiver handovers creating missed entries. A pattern is more useful when the underlying data is reasonably consistent.",
+          "Avoid treating the dashboard as a grade. Babies are variable, and a different day is not automatically a bad day."
+        ]
+      },
+      {
+        title: "Share the record and know when to stop",
+        paragraphs: [
+          "During a handover, the next caregiver usually needs only the latest feed, current sleep state, recent diapers and any important note. A clean record reduces repeated questions and duplicated feeds.",
+          "Pause or simplify tracking if it adds anxiety without helping a decision. Contact a healthcare professional promptly for concerns about feeding, hydration, breathing, fever, unusual sleepiness, growth or behavior rather than waiting for the chart to become clearer."
+        ]
+      }
+    ],
+    faq: [
+      {
+        question: "What is the easiest way to track baby feeding and sleep?",
+        answer:
+          "Use one timeline and record only feeding type, time, amount or duration, and sleep start and end times. Consistency matters more than excessive detail."
+      },
+      {
+        question: "Should I track naps and nighttime sleep separately?",
+        answer:
+          "They can be labeled separately while still contributing to the same 24-hour total. This makes both the daily pattern and total sleep easier to review."
+      },
+      {
+        question: "How many days are needed to see a pattern?",
+        answer:
+          "There is no fixed number. Several ordinary days provide more context than one day, but normal development can change the pattern quickly."
+      },
+      {
+        question: "Can feeding and sleep data diagnose a problem?",
+        answer:
+          "No. The record may help you describe a concern, but diagnosis and personalized advice require a qualified healthcare professional."
+      }
+    ],
+    externalSources: [
+      {
+        label: "American Academy of Pediatrics: how often and how much babies eat",
+        href: "https://www.healthychildren.org/English/ages-stages/baby/feeding-nutrition/Pages/how-often-and-how-much-should-your-baby-eat.aspx"
+      },
+      {
+        label: "American Academy of Sleep Medicine: child sleep duration advisory",
+        href: "https://aasm.org/advocacy/position-statements/child-sleep-duration-health-advisory/"
+      },
+      {
+        label: "CDC: helping babies sleep safely",
+        href: "https://www.cdc.gov/reproductive-health/features/babies-sleep.html"
+      }
+    ]
   }
 } satisfies Record<string, TrafficPageContent>;
 
