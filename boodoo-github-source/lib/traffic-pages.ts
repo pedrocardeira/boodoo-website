@@ -1,5 +1,6 @@
 export type TrafficPageContent = {
   slug: string;
+  kind?: "guide" | "landing";
   metadataTitle: string;
   description: string;
   eyebrow: string;
@@ -254,6 +255,7 @@ export const trafficPages = {
   },
   newbornChecklist: {
     slug: "what-to-track-for-a-newborn",
+    kind: "guide",
     metadataTitle: "What to Track for a Newborn: Simple Checklist | BooDoo",
     description:
       "Learn what is useful to track for a newborn—feeding, diapers, sleep and growth—without turning every day into a spreadsheet.",
@@ -359,6 +361,7 @@ export const trafficPages = {
   },
   feedingDiaperLog: {
     slug: "newborn-feeding-and-diaper-log",
+    kind: "guide",
     metadataTitle: "Newborn Feeding and Diaper Log: What to Record | BooDoo",
     description:
       "Use a simple newborn feeding and diaper log to record breastfeeds, bottles, wet diapers and stools, with a practical printable-style checklist.",
@@ -464,6 +467,7 @@ export const trafficPages = {
   },
   wakeWindows: {
     slug: "baby-wake-windows-by-age",
+    kind: "guide",
     metadataTitle: "Baby Wake Windows by Age: A Flexible Guide | BooDoo",
     description:
       "Understand baby wake windows by age, why exact schedules vary, and how to combine sleepy cues with a simple 24-hour sleep record.",
@@ -569,6 +573,7 @@ export const trafficPages = {
   },
   feedingAndSleep: {
     slug: "how-to-track-baby-feeding-and-sleep",
+    kind: "guide",
     metadataTitle: "How to Track Baby Feeding and Sleep | BooDoo",
     description:
       "Learn how to track baby feeding and sleep in one simple timeline, what details to record and how to review patterns without chasing perfection.",
