@@ -43,24 +43,30 @@ function structuredData(page: TrafficPageContent) {
         }
       }))
     },
-    {
-      "@context": "https://schema.org",
-      "@type": "Article",
-      headline: page.metadataTitle,
-      description: page.description,
-      image: "https://www.boodoo.app/screenshots/01-dashboard-photo-sources.png",
-      mainEntityOfPage: `https://www.boodoo.app/${page.slug}`,
-      author: {
-        "@type": "Person",
-        name: "José Cardeira",
-        url: "https://www.boodoo.app/about"
-      },
-      publisher: {
-        "@type": "Organization",
-        name: "BooDoo",
-        url: "https://www.boodoo.app/"
-      }
-    }
+    ...(page.kind === "guide"
+      ? [
+          {
+            "@context": "https://schema.org",
+            "@type": "Article",
+            headline: page.title,
+            description: page.description,
+            image: "https://www.boodoo.app/screenshots/01-dashboard-photo-sources.png",
+            mainEntityOfPage: `https://www.boodoo.app/${page.slug}`,
+            datePublished: "2026-08-12",
+            dateModified: "2026-08-12",
+            author: {
+              "@type": "Person",
+              name: "José Cardeira",
+              url: "https://www.boodoo.app/about"
+            },
+            publisher: {
+              "@type": "Organization",
+              name: "BooDoo",
+              url: "https://www.boodoo.app/"
+            }
+          }
+        ]
+      : [])
   ];
 }
 
