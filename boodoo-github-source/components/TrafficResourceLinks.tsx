@@ -26,6 +26,26 @@ const resources = [
     href: "/baby-feeding-log-template",
     title: "Printable feeding log",
     text: "Type, print or download BooDoo when paper becomes difficult."
+  },
+  {
+    href: "/what-to-track-for-a-newborn",
+    title: "What to track for a newborn",
+    text: "Start with feeding, diapers, sleep and growth without recording everything."
+  },
+  {
+    href: "/newborn-feeding-and-diaper-log",
+    title: "Feeding and diaper log",
+    text: "Keep feeds and diaper changes together in one useful daily record."
+  },
+  {
+    href: "/baby-wake-windows-by-age",
+    title: "Baby wake windows by age",
+    text: "Use awake-time patterns flexibly instead of treating the clock as a deadline."
+  },
+  {
+    href: "/how-to-track-baby-feeding-and-sleep",
+    title: "Track feeding and sleep",
+    text: "Build one simple timeline that every tired caregiver can understand."
   }
 ];
 
