@@ -8,7 +8,7 @@ import "./family.css";
 const title = "Boodoo | Little Days. Lifelong Memories.";
 
 const description =
-  "Care for your growing family with Boodoo. Track daily routines, share family moments, and create beautiful memory book drafts.";
+  "Share your child’s care across multiple iPhones. Track feeding, sleep, growth, and milestones with Boodoo, save memories, and explore memory books. Android is next.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.boodoo.app"),
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     siteName: "BooDoo",
     images: [
       {
-        url: "/screenshots/v2/app-3862.webp",
+        url: "/screenshots/v2/app-3999.webp",
         width: 900,
         height: 1955,
         alt: "BooDoo app dashboard screenshot",
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title,
     description,
-    images: ["/screenshots/v2/app-3862.webp"],
+    images: ["/screenshots/v2/app-3999.webp"],
   },
 
   icons: {

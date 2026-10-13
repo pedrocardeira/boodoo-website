@@ -51,3 +51,7 @@ The public `/compare` route links to official sources and separates current iOS 
 Use Node 22+ and pnpm. `pnpm install --ignore-scripts`; `pnpm dev`; `pnpm build`; `pnpm start`. The project now needs Next.js server hosting for the supplier API; static export alone is insufficient. Existing Vercel hosting can run Next.js. Keep this as a preview/draft until setup above is verified.
 
 For logic checks, compile `lib/v2/model.ts` and `lib/v2/print-provider.ts` into `tests/compiled` with TypeScript, then run `node --test tests/model.test.cjs`. `tests/compiled` is ignored.
+
+## October 13 follow-up
+
+Added prominent shared access across multiple iPhones, parents and invited caregivers, and Android-coming-next messaging. Expanded the homepage with an 11-feature interactive guide using the newly supplied screenshots: daily overview, Caregiver Card, Lock Screen sleep Live Activity, care records, Health Stories, growth charts, development, Ask BooDoo, predicted routine, Evolution, and Moments/books. The guide distinguishes iOS features from the web preview. Vercel install failure was fixed by explicitly skipping the optional unrs-resolver lifecycle script; deployment of commit 277719d succeeded.
