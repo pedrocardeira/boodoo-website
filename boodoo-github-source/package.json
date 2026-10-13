@@ -6,10 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test": "tsc lib/v2/model.ts lib/v2/print-provider.ts --outDir tests/compiled --module commonjs --target es2022 --skipLibCheck && node --test tests/model.test.cjs"
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",
+    "firebase": "^13.0.0",
     "framer-motion": "^12.23.12",
     "lucide-react": "^0.468.0",
     "next": "^15.5.21",
@@ -26,5 +28,9 @@
     "postcss": "^8.4.49",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.2"
+  },
+  "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": ">=22"
   }
 }
