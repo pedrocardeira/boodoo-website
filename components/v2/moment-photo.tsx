@@ -4,11 +4,17 @@ import type { Moment, MomentFraming } from "@/lib/v2/model";
 
 export function normalizedMomentFraming(moment: Moment): MomentFraming {
   const f = moment.photoFraming;
+  const zoom = f?.zoom;
+  const offsetX = f?.offsetX;
+  const offsetY = f?.offsetY;
   return {
     layout: f?.layout === "fillFrame" ? "fillFrame" : "entirePhoto",
-    zoom: Number.isFinite(f?.zoom) ? Math.min(3, Math.max(1, f!.zoom)) : 1,
-    offsetX: Number.isFinite(f?.offsetX) ? Math.min(.5, Math.max(-.5, f!.offsetX)) : 0,
-    offsetY: Number.isFinite(f?.offsetY) ? Math.min(.5, Math.max(-.5, f!.offsetY)) : 0
+    zoom: typeof zoom === "number" && Number.isFinite(zoom)
+      ? Math.min(3, Math.max(1, zoom)) : 1,
+    offsetX: typeof offsetX === "number" && Number.isFinite(offsetX)
+      ? Math.min(.5, Math.max(-.5, offsetX)) : 0,
+    offsetY: typeof offsetY === "number" && Number.isFinite(offsetY)
+      ? Math.min(.5, Math.max(-.5, offsetY)) : 0
   };
 }
 
