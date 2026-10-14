@@ -1,12 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Analytics } from "@vercel/analytics/react";
-import Script from "next/script";
-import "./globals.css";
+import PublicAnalytics from "@/components/v2/analytics";
 
-const title = "BooDoo Baby Tracker | Feeding, Sleep & Growth App";
+import "./globals.css";
+import "./v2.css";
+import "./family.css";
+
+const title = "Boodoo | Little Days. Lifelong Memories.";
 
 const description =
-  "Track your newborn’s feeding, sleep, poop and growth in seconds. BooDoo turns daily logs into clear, age-adapted insights, goals and reminders.";
+  "Understand your logged care data with Ask BooDoo. An app that adapts from pregnancy to baby to toddler, with shared records across multiple iPhones. Android is next.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.boodoo.app"),
@@ -28,9 +30,9 @@ export const metadata: Metadata = {
     siteName: "BooDoo",
     images: [
       {
-        url: "/screenshots/01-dashboard-photo-sources.png",
-        width: 1242,
-        height: 2688,
+        url: "/screenshots/v2/app-3999.webp",
+        width: 900,
+        height: 1955,
         alt: "BooDoo app dashboard screenshot",
       },
     ],
@@ -42,7 +44,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title,
     description,
-    images: ["/screenshots/01-dashboard-photo-sources.png"],
+    images: ["/screenshots/v2/app-3999.webp"],
   },
 
   icons: {
@@ -54,7 +56,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#ffffff",
+  themeColor: "#26262b",
 };
 
 export default function RootLayout({
@@ -65,22 +67,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-VFPW0E83FF"
-          strategy="afterInteractive"
-        />
-
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-VFPW0E83FF');
-          `}
-        </Script>
-
+        <a className="skip-link" href="#main">Skip to content</a>
         {children}
-        <Analytics />
+        <PublicAnalytics />
       </body>
     </html>
   );

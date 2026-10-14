@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 1
     },
+    ...['albums','compare'].map(slug=>({url:`https://www.boodoo.app/${slug}`,lastModified,changeFrequency:'monthly' as const,priority:0.8})),
     ...allTrackerPages.map((page) => ({
       url: `https://www.boodoo.app/${page.slug}`,
       lastModified,
