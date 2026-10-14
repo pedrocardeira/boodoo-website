@@ -18,7 +18,8 @@ export type Moment = {
   // Presentation-only, shared with iOS. Never modify source photo bytes.
   photoFraming?: MomentFraming;
 };
-export type Album = { id: string; title: string; childID: string; style: string; period: string; updatedAt: string; moments: Moment[] };
+import type { Composition } from "./book-composition";
+export type Album = { composition?: Composition; id: string; title: string; childID: string; style: string; period: string; updatedAt: string; moments: Moment[] };
 export const bookStyles = ['Boodoo Classic', 'Soft Childhood', 'Minimal', 'Color Story'];
 export const periods = ['Our First Month', 'Three Months Together', 'Six Months Together', 'My First Year', 'My Second Year', 'My Third Year', 'My Fourth Year', 'My Fifth Year', 'Annual Book', 'Custom Book'];
 export const collectionNames = ['feeds', 'sleep', 'nursing', 'diapers', 'stools', 'growth', 'milestones', 'careEntries'] as const;

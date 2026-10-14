@@ -73,3 +73,7 @@ The web preview now matches the iOS three-memory draft threshold; 8 memories / 3
 Prodigi source and its README explicitly describe sandbox quotes, with no orders or payments. The new web proxy forwards only Firebase authorization plus destination/currency/page count/copies to the fixed existing Firebase endpoint. No child records or images are sent. The editor offers a labeled sandbox test after login; demo mode does not call the supplier. A real-account quote and cloud draft save cannot be verified without configured web Firebase access and a signed-in account. No production ordering is claimed.
 
 Validation: production build and 11 model/provider regression tests passed. Browser demo creation and caption save passed.
+
+## Premium website editor (14 October)
+
+The iPhone editor is a reference only; implementation is in the existing website Albums screen. See `docs/PREMIUM_WEB_EDITOR.md` for the v2 composition model, browser autosave, legacy migration, controls and remaining print/cloud acceptance work. Local tests: 26 passing; production build passed. Interactive browser QA was blocked by the URL security gate, so the PR remains a review draft pending acceptance rather than a claim of fully verified production delivery.
