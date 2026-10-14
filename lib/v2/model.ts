@@ -1,6 +1,22 @@
 export type RecordData = { id: string; [key: string]: unknown };
 export type Child = RecordData & { babyName: string; birthDateTimestamp: number };
-export type Moment = { id: string; title: string; notes: string; date: string; image?: string; width?: number; height?: number };
+export type MomentFraming = {
+  layout: "entirePhoto" | "fillFrame";
+  zoom: number;
+  offsetX: number;
+  offsetY: number;
+};
+export type Moment = {
+  id: string;
+  title: string;
+  notes: string;
+  date: string;
+  image?: string;
+  width?: number;
+  height?: number;
+  // Presentation-only, shared with iOS. Never modify source photo bytes.
+  photoFraming?: MomentFraming;
+};
 export type Album = { id: string; title: string; childID: string; style: string; period: string; updatedAt: string; moments: Moment[] };
 export const bookStyles = ['Boodoo Classic', 'Soft Childhood', 'Minimal', 'Color Story'];
 export const periods = ['Our First Month', 'Three Months Together', 'Six Months Together', 'My First Year', 'My Second Year', 'My Third Year', 'My Fourth Year', 'My Fifth Year', 'Annual Book', 'Custom Book'];
