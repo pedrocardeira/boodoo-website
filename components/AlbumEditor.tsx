@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import styles from "./album-editor.module.css";
 import {
   ArrowDown, ArrowLeft, ArrowUp, BookOpen, Camera, Check,
   Heart, Moon, Pencil, RotateCcw, Save, Sparkles, Star,
@@ -218,9 +219,8 @@ export function AlbumEditor({ draft, mediaUrls = {}, onSave, onClose }: AlbumEdi
       color: "#9A273B", background: "#FCE7E9", padding: 13, borderRadius: 12 }}>
       <AlertCircle size={16} style={{ verticalAlign: "middle" }} /> {error}
     </p>}
-    <div style={{
-      maxWidth: 1360, margin: "0 auto", display: "grid", gap: 16,
-      gridTemplateColumns: "minmax(170px, .55fr) minmax(300px, 1.65fr) minmax(220px, .8fr)"
+    <div className={styles.layout} style={{
+      maxWidth: 1360, margin: "0 auto"
     }}>
       <nav aria-label="Album pages" style={{ background: "#fff", borderRadius: 18, padding: 14, alignSelf: "start", minWidth: 0 }}>
         <div style={{ fontWeight: 800, marginBottom: 12 }}>Pages ({working.pages.length})</div>
