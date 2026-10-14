@@ -54,7 +54,9 @@ export type BookMediaRef = {
   storagePath: string;
   /** Source record ID for parental consent and provenance. */
   sourceId: string;
-  /** Parent-chosen crop, normalized to the unit square. */
+  /** Full photo is the default; fill is an explicit, reversible framing. */
+  photoLayout?: "entire" | "fill";
+  /** Non-destructive crop instructions for preview/print (normalized 0–1). */
   crop?: { x: number; y: number; width: number; height: number };
   focalPoint?: { x: number; y: number };
   /** Never store permanent public download URLs in book drafts. */

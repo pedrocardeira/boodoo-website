@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import styles from "./album-editor.module.css";
+import { readFraming, updateFraming, type Framing } from "@/lib/photo-framing";
 import {
   ArrowDown, ArrowLeft, ArrowUp, BookOpen, Camera, Check,
   Heart, Moon, Pencil, RotateCcw, Save, Sparkles, Star,
@@ -66,20 +67,29 @@ function Photo({
 }: {
   page: BookPage; mediaUrls: Record<string, string>; alt: string;
 }) {
-  const url = page.media[0]?.storagePath
-    ? mediaUrls[page.media[0].storagePath] : undefined;
+  const media = page.media[0];
+  const url = media?.storagePath ? mediaUrls[media.storagePath] : undefined;
   if (!url) {
     return <div style={{
       display: "grid", placeItems: "center", minHeight: 180,
       background: "#F7F3F6", borderRadius: 14, color: "#7B7D89"
     }}><Camera size={30} aria-label="Photo not yet available" /></div>;
   }
-  // mediaUrls comes from the authorized parent shell; never store or embed
-  // permanent publicly accessible Firebase Storage download URLs.
-  return <img
-    src={url} alt={alt}
-    style={{ width: "100%", maxHeight: 380, objectFit: "cover", borderRadius: 14 }}
-  />;
+  const framing = readFraming(media);
+  // This only transforms the preview; full-size source bytes remain untouched.
+  const fill = framing.mode === "fill";
+  return <div style={{
+    width: "100%", aspectRatio: "4 / 3", overflow: "hidden",
+    borderRadius: 14, background: "#F8F3F5"
+  }}>
+    <img src={url} alt={alt} style={{
+      width: "100%", height: "100%", display: "block",
+      objectFit: fill ? "cover" : "contain",
+      objectPosition: `${framing.focusX * 100}% ${framing.focusY * 100}%`,
+      transform: fill ? `scale(${framing.zoom})` : undefined,
+      transformOrigin: `${framing.focusX * 100}% ${framing.focusY * 100}%`
+    }} />
+  </div>;
 }
 
 function PreviewPage({ page, draft, mediaUrls }: {
@@ -148,6 +158,13 @@ export function AlbumEditor({ draft, mediaUrls = {}, onSave, onClose }: AlbumEdi
 
   const patch = (id: string, changes: Partial<BookPage>) =>
     apply(working.pages.map((page) => page.id === id ? { ...page, ...changes } : page));
+
+  const patchPhoto = (page: BookPage, changes: Partial<Framing>) => {
+    const media = page.media[0];
+    if (!media) return;
+    const next = updateFraming(media, { ...readFraming(media), ...changes });
+    patch(page.id, { media: [next, ...page.media.slice(1)] });
+  };
 
   const move = (id: string, delta: number) => {
     const index = working.pages.findIndex((page) => page.id === id);
@@ -271,6 +288,57 @@ export function AlbumEditor({ draft, mediaUrls = {}, onSave, onClose }: AlbumEdi
               onChange={(e) => patch(selected.id, { note: e.target.value })}
               style={{ border: "1px solid #D9DEE8", borderRadius: 10, padding: 9, resize: "vertical", width: "100%" }} />
           </label>
+          {selected.media.length > 0 && <fieldset style={{
+            border: "1px solid #E5DBE1", borderRadius: 14, padding: 12,
+            display: "grid", gap: 10
+          }}>
+            <legend style={{ fontSize: 13, fontWeight: 800, color: "#9F5A78" }}>
+              Photo framing
+            </legend>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <button type="button" disabled={!isEditable}
+                onClick={() => patchPhoto(selected, { mode: "entire" })}
+                aria-pressed={readFraming(selected.media[0]).mode === "entire"}
+                style={{
+                  ...controlStyle,
+                  borderColor: readFraming(selected.media[0]).mode === "entire" ? "#A75072" : "#D9DCE7",
+                  background: readFraming(selected.media[0]).mode === "entire" ? "#FCEEF4" : "#fff"
+                }}>Entire photo</button>
+              <button type="button" disabled={!isEditable}
+                onClick={() => patchPhoto(selected, { mode: "fill" })}
+                aria-pressed={readFraming(selected.media[0]).mode === "fill"}
+                style={{
+                  ...controlStyle,
+                  borderColor: readFraming(selected.media[0]).mode === "fill" ? "#A75072" : "#D9DCE7",
+                  background: readFraming(selected.media[0]).mode === "fill" ? "#FCEEF4" : "#fff"
+                }}>Fill frame</button>
+            </div>
+            {readFraming(selected.media[0]).mode === "fill" && <>
+              {([
+                ["zoom", "Zoom", 1, 3, 0.05],
+                ["focusX", "Horizontal alignment", 0, 1, 0.01],
+                ["focusY", "Vertical alignment", 0, 1, 0.01]
+              ] as const).map(([field, label, min, max, step]) =>
+                <label key={field} style={{ display: "grid", gap: 4, fontSize: 12 }}>
+                  <span>{label}</span>
+                  <input type="range" min={min} max={max} step={step}
+                    disabled={!isEditable}
+                    value={readFraming(selected.media[0])[field]}
+                    onChange={(e) => patchPhoto(selected, { [field]: Number(e.target.value) })}
+                    aria-label={label} />
+                </label>
+              )}
+            </>}
+            <button type="button" disabled={!isEditable}
+              style={controlStyle}
+              onClick={() => patchPhoto(selected, { mode: "entire", zoom: 1, focusX: 0.5, focusY: 0.5 })}>
+              <RotateCcw size={16}/> Restore full photo
+            </button>
+            <small style={{ color: "#5B687D", lineHeight: 1.4 }}>
+              Framing is reversible. The original image file and resolution are retained
+              for printing; only placement instructions are saved.
+            </small>
+          </fieldset>}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button style={controlStyle} disabled={!isEditable || working.pages[0]?.id === selected.id}
               onClick={() => move(selected.id, -1)}><ArrowUp size={16} /> Earlier</button>
@@ -284,7 +352,8 @@ export function AlbumEditor({ draft, mediaUrls = {}, onSave, onClose }: AlbumEdi
           </button>
           <p style={{ color: "#727C8C", fontSize: 12, lineHeight: 1.5, margin: 0 }}>
             Changing or hiding an album page never deletes the original Moment or Care entry.
-            Photo crop, replacement, print preview and ordering are later stages.
+            Photo framing changes only its placement, never the original file.
+            Replacing photos, print preview and ordering are later stages.
           </p>
         </>}
       </aside>
