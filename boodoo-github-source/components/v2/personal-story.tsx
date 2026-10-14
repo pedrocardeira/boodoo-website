@@ -4,7 +4,8 @@ import { ArrowRight, BookOpen, Camera, Heart, Settings } from 'lucide-react';
 const views = [
   {name:'Your daily book', icon:BookOpen, screen:'4049', title:'An ordinary day. A memory forever.', copy:'A photograph, a few words, a little first. Save them in Moments and look back by year, month, or day. Over time, those everyday entries become your child’s own daily book.'},
   {name:'Your photos', icon:Camera, screen:'4054', title:'Open the app. See your little world.', copy:'Choose your child’s profile photo and background. The face you love stays at the center of the day, with care and routines close at hand.'},
-  {name:'Your settings', icon:Settings, screen:'4048', title:'Their own colors. Their own rhythm.', copy:'Personalize the theme and main color, and keep each child’s profile and settings their own. BooDoo feels familiar because you make it personal.'},
+  {name:'Your settings', icon:Settings, screen:'4092', title:'Their own colors. Their own rhythm.', copy:'Choose your main color and background, use Moments photos on the home screen, and let the latest photo appear automatically. Keep each child’s profile and settings their own.'},
+  {name:'Your tracking', icon:Settings, screen:'4089', title:'Choose what matters to your day.', copy:'Select the care you want to track, from milk and breastfeeding to sleep, naps, diapers, and solid foods. The menu adapts to your choices.'},
   {name:'Before birth', icon:Heart, screen:'4052', title:'Their story starts before hello.', copy:'Keep the thoughts, decisions, photos, and special days of pregnancy. Start collecting the memories you will one day share with them.'}
 ];
 export function PersonalStory(){

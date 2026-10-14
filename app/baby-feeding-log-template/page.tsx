@@ -115,7 +115,7 @@ export default function BabyFeedingLogTemplatePage() {
       <header className="border-b border-white/70 bg-[#f7f6f4]/90 backdrop-blur-2xl print:hidden">
         <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
           <Link href="/" className="flex items-center gap-3" aria-label="BooDoo home">
-            <Image src="/icons/boodoo-icon.png" alt="" width={40} height={40} className="rounded-xl" />
+            <Image src="/icons/boodoo-mark.png" alt="" width={40} height={40} className="rounded-xl" />
             <span className="text-xl font-black">BooDoo</span>
           </Link>
           <AppStoreLink

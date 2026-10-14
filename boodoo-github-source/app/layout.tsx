@@ -8,7 +8,7 @@ import "./family.css";
 const title = "Boodoo | Little Days. Lifelong Memories.";
 
 const description =
-  "Understand your logged care data with Ask BooDoo. An app that adapts from pregnancy to baby to toddler, with shared records across multiple iPhones. Android is next.";
+  "Track feeding, sleep, care, growth, and milestones. Get insights from your logged records with Ask BooDoo and follow your child’s development from pregnancy through childhood.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.boodoo.app"),
@@ -30,10 +30,10 @@ export const metadata: Metadata = {
     siteName: "BooDoo",
     images: [
       {
-        url: "/screenshots/v2/app-3999.webp",
-        width: 900,
-        height: 1955,
-        alt: "BooDoo app dashboard screenshot",
+        url: "/screenshots/v2/app-4088.webp",
+        width: 1000,
+        height: 2173,
+        alt: "BooDoo app stages from pregnancy through childhood",
       },
     ],
     locale: "en_US",
@@ -44,12 +44,12 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title,
     description,
-    images: ["/screenshots/v2/app-3999.webp"],
+    images: ["/screenshots/v2/app-4088.webp"],
   },
 
   icons: {
-    icon: "/icons/boodoo-icon.png",
-    apple: "/icons/boodoo-icon.png",
+    icon: "/icons/boodoo-mark.png",
+    apple: "/icons/boodoo-mark.png",
   },
 };
 
