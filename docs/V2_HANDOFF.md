@@ -22,7 +22,7 @@ The user's screenshots define the design: charcoal surfaces, large rounded panel
 1. Register or obtain a Firebase Web app configuration for the existing Boodoo project. Set the public configuration variables from `.env.example` in the hosting environment. Do not use the iOS app ID as a web app ID. Add the deployed domain where required by Firebase Auth and confirm API-key restrictions.
 2. Validate login with an existing registered account whose iOS app has written `users/{uid}.householdID`. Test owner and caregiver accounts, sign-out, expired sessions, denied membership, and two-account isolation. No real account credentials were provided for this test.
 3. Merge/test/deploy the additive album rules in `WEB_ALBUM_RULES.md`, configure Storage CORS, and enable cloud albums. The website has not deployed Firebase rules. Cloud album drafts are separate from current iOS-generated drafts.
-4. Select the print supplier and exact US SKU. Obtain sandbox credentials, test quotes, order physical samples, and assess binding, color, skin tones, packaging, shipping, tax, and reprint policy. No supplier credentials or sample purchase was authorized/provided.
+4. Prodigi is already integrated by the iOS project through an authenticated Firebase sandbox quote function. The website now reuses it via `/api/print/sandbox-quote`; no new supplier key is needed in Vercel for this path. Verify a real signed-in web session, final product SKU and production specifications before checkout. The older admin-only `/api/print/quote` evaluator remains separate.
 5. Production commerce still needs original-resolution assets, supplier-specific PDFs/bleed/spine/page rules, authenticated delivery URLs, server-owned pricing, checkout, verified payment webhook, idempotent print submission, delivery webhooks, order history, refunds/reprints, retention/deletion handling, and end-to-end tests.
 
 No fabricated prices, delivery promises, successful login, live cloud saves, paid orders, or complete competitor parity are claimed. Preview HTML is a personal export, not a press-ready production PDF.
@@ -63,3 +63,13 @@ Homepage positioning now leads with Ask BooDoo insights grounded in logged recor
 Quick logging is a primary homepage benefit, illustrated by the user’s feeding, sleep, diaper, and solids screenshots. Copy describes one main screen as the starting point, while acknowledging detailed forms rather than claiming every entry requires a single tap.
 
 Added dedicated breastfeeding, pumping/milk balance, goals, intervals, and reminders content using screenshots IMG_4032–4035. Shared-care copy explicitly explains QR-code sharing between Apple devices. Goals are described as tracking tools, not prescribed intake. No real invitation QR code is published. Reminder claims were checked against the previously reviewed iOS source.
+
+## October 14: personal daily book and album repair
+
+Reviewed iOS main `32f87bd035e705e32c279aeb1ee30d401c626f0e` and merged website main through `2ac9849`. Retained existing subscriptions and pricing. Added the user's latest screenshots to explain the daily book, photo backgrounds, colors, pregnancy stories and older-child care.
+
+The web preview now matches the iOS three-memory draft threshold; 8 memories / 3 photos / 3 days are editorial goals. Existing photo-only journal entries are retained. When completed chapters do not include enough saved Moments, new drafts use a custom period rather than silently starting empty. Custom chapters remain selectable and include the full end date. The newer full-photo and framing editor changes are synchronized into both deployment roots.
+
+Prodigi source and its README explicitly describe sandbox quotes, with no orders or payments. The new web proxy forwards only Firebase authorization plus destination/currency/page count/copies to the fixed existing Firebase endpoint. No child records or images are sent. The editor offers a labeled sandbox test after login; demo mode does not call the supplier. A real-account quote and cloud draft save cannot be verified without configured web Firebase access and a signed-in account. No production ordering is claimed.
+
+Validation: production build and 11 model/provider regression tests passed. Browser demo creation and caption save passed.
