@@ -8,7 +8,7 @@ import "./family.css";
 const title = "Boodoo | Little Days. Lifelong Memories.";
 
 const description =
-  "Share your child’s care across multiple iPhones. Track feeding, sleep, growth, and milestones with Boodoo, save memories, and explore memory books. Android is next.";
+  "Understand your logged care data with Ask BooDoo. An app that adapts from pregnancy to baby to toddler, with shared records across multiple iPhones. Android is next.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.boodoo.app"),

@@ -54,6 +54,10 @@ For logic checks, compile `lib/v2/model.ts` and `lib/v2/print-provider.ts` into 
 
 ## October 13 follow-up
 
-Added prominent shared access across multiple iPhones, parents and invited caregivers, and Android-coming-next messaging. Expanded the homepage with an 12-feature interactive guide using the newly supplied screenshots: daily overview, Caregiver Card, Lock Screen sleep Live Activity, care records, Health Stories, growth charts, development, Ask BooDoo, predicted routine, Evolution, and Moments/books. The guide distinguishes iOS features from the web preview. Vercel install failure was fixed by explicitly skipping the optional unrs-resolver lifecycle script; deployment of commit 277719d succeeded.
+Added prominent shared access across multiple iPhones, parents and invited caregivers, and Android-coming-next messaging. Expanded the homepage with an 13-feature interactive guide using the newly supplied screenshots: daily overview, Caregiver Card, Lock Screen sleep Live Activity, care records, Health Stories, growth charts, development, Ask BooDoo, predicted routine, Evolution, and Moments/books. The guide distinguishes iOS features from the web preview. Vercel install failure was fixed by explicitly skipping the optional unrs-resolver lifecycle script; deployment of commit 277719d succeeded.
 
 The latest child-picker screenshot replaces the older Family image and illustrates child-specific settings, sharing controls, multiple ages, and pregnancy profiles with due dates.
+
+Homepage positioning now leads with Ask BooDoo insights grounded in logged records and an experience that adapts from pregnancy through baby and toddler stages. Dedicated sections, example questions, stage cards, and FAQs explain both benefits without fabricating AI answers.
+
+Quick logging is a primary homepage benefit, illustrated by the user’s feeding, sleep, diaper, and solids screenshots. Copy describes one main screen as the starting point, while acknowledging detailed forms rather than claiming every entry requires a single tap.
