@@ -48,4 +48,23 @@ export const demoChildren:Child[]=[{id:'demo-ella',babyName:'Ella',birthDateTime
 export function demoRecords(childID:string):FamilyRecords{const r=emptyRecords();const d=new Date();const at=(h:number,m=0)=>{const x=new Date(d);x.setHours(h,m,0,0);return x.toISOString()};if(childID==='demo-noah'){r.milestones=[{id:'n1',title:'A very big little adventure',notes:'The whole walk to the park, holding hands and asking a hundred questions.',date:at(9)}];r.growth=[{id:'g1',date:at(8),weightKg:15.2,heightCm:98}];return r;}
  r.feeds=[{id:'f1',date:at(7,15),amount:150,sourceRaw:'formula'},{id:'f2',date:at(10,30),amount:120,sourceRaw:'pumped'},{id:'f3',date:at(13,15),amount:150,sourceRaw:'formula'}];r.sleep=[{id:'s1',startDate:at(0),endDate:at(6,45)},{id:'s2',startDate:at(9),endDate:at(10)}];r.diapers=[{id:'d1',date:at(7,20),type:'wet'},{id:'d2',date:at(11),type:'mixed'}];
  r.milestones=[{id:'m1',title:'That little morning smile',notes:'You woke up, saw us, and gave us the biggest smile. A tiny moment we never want to forget.',date:at(7)},{id:'m2',title:'A whole new world of flavors',notes:'Your first taste of avocado. The expression on your face said it all.',date:new Date(+d-86400000*4).toISOString()},{id:'m3',title:'The best place in the world',notes:'An afternoon nap in our arms, with nowhere else we needed to be.',date:new Date(+d-86400000*9).toISOString()}];r.growth=[{id:'g1',date:new Date(+d-86400000*60).toISOString(),weightKg:5.8,heightCm:61},{id:'g2',date:new Date(+d-86400000*30).toISOString(),weightKg:6.3,heightCm:63},{id:'g3',date:at(8),weightKg:6.8,heightCm:65}];return r;}
-export function newAlbum(child:Child,moments:Moment[],period='My First Year'):Album{return{id:crypto.randomUUID(),title:`${child.babyName}’s ${period.replace(/^(My|Our) /, "").toLowerCase()}`,childID:child.id,style:bookStyles[0],period,updatedAt:new Date().toISOString(),moments:selectPeriod(moments,period,child.birthDateTimestamp)}};
+// Never default a six-month-old child to a First Year book. Keep the chapter
+// catalog consistent with BooDoo iOS and count Moments already synced from it.
+export function ageCompletedBookPeriods(birthDateTimestamp:number,now=new Date()):string[] {
+ const birth=new Date(birthDateTimestamp*1000);
+ if(!Number.isFinite(+birth)||+birth>+now)return [];
+ const thresholds=[1,3,6,12,24,36,48,60];
+ return thresholds.flatMap((months,i)=>addMonthsClamped(birth,months)<=now?[periods[i]]:[]);
+}
+export function readyBookPeriods(child:Child,moments:Moment[],now=new Date()):string[] {
+ return ageCompletedBookPeriods(child.birthDateTimestamp,now).filter(period=>
+   selectPeriod(moments,period,child.birthDateTimestamp,now)
+     .filter(m=>m.title.trim()||m.notes.trim()||m.image).length>=3
+ );
+}
+export function newAlbum(child:Child,moments:Moment[],period?:string):Album {
+ const chosen=period??readyBookPeriods(child,moments).at(-1)
+   ??ageCompletedBookPeriods(child.birthDateTimestamp).at(-1)
+   ??periods[0];
+ return{id:crypto.randomUUID(),title:`${child.babyName}’s ${chosen.replace(/^(My|Our) /, "").toLowerCase()}`,childID:child.id,style:bookStyles[0],period:chosen,updatedAt:new Date().toISOString(),moments:selectPeriod(moments,chosen,child.birthDateTimestamp)};
+}
