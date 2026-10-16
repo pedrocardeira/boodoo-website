@@ -75,7 +75,7 @@ export default function TrackerLandingPage({ page }: { page: TrackerPageContent 
             <Link href="/#references" className="transition hover:text-[#ff5865]">
               Guidance
             </Link>
-            <Link href="/#pricing" className="transition hover:text-[#ff5865]">
+            <Link href="/pricing" className="transition hover:text-[#ff5865]">
               Pricing
             </Link>
           </div>

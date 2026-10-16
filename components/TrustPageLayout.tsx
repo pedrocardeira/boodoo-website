@@ -47,7 +47,7 @@ export default function TrustPageLayout({
             <Link href="/#features" className="transition hover:text-[#ff5865]">
               Features
             </Link>
-            <Link href="/#pricing" className="transition hover:text-[#ff5865]">
+            <Link href="/pricing" className="transition hover:text-[#ff5865]">
               Pricing
             </Link>
           </div>
