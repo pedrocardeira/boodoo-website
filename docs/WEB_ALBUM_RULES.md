@@ -9,7 +9,7 @@ match /users/{uid}/webAlbums/{albumID} {
   function ownsAlbum() { return request.auth != null && request.auth.uid == uid; }
   allow read, delete: if ownsAlbum();
   allow create, update: if ownsAlbum()
-    && request.resource.data.keys().hasOnly(['id','title','childID','style','period','updatedAt','moments'])
+    && request.resource.data.keys().hasOnly(['id','title','childID','style','period','updatedAt','moments','composition'])
     && request.resource.data.id == albumID
     && request.resource.data.title is string
     && request.resource.data.title.size() <= 100
@@ -37,3 +37,5 @@ match /users/{uid}/webAlbumAssets/{albumID}/{assetID} {
 Required emulator checks: owner read/write succeeds; other user and anonymous access fails; oversize/non-image upload fails; unrelated household membership rules are unchanged. Verify Storage download CORS for deployed website origins. Firebase download-token URLs are bearer links: do not expose private album URLs in public metadata, analytics, or logs. An authenticated download endpoint and short-lived asset delivery should replace long-lived token URLs before a full production fulfillment launch.
 
 Activate `NEXT_PUBLIC_WEB_ALBUMS_ENABLED=true` only after those checks and a real-account smoke test. The app does not currently read `webAlbums`; two-way iOS/web album sync needs a shared album schema and an iOS change. Deleting a draft does not yet clean up stored photo assets; add an authenticated cleanup job before broad release.
+
+Premium web drafts add optional `composition.version = 2` with page/slot references and book-only text edits. Review rules for this field and validate size/ownership in the emulator before enabling cloud writes. Browser drafts use owner-scoped IndexedDB and remain accessible only through the signed-in account UI; clearing site data removes these local copies.

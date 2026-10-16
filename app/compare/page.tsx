@@ -1,13 +1,119 @@
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { Header,Footer } from '@/components/v2/header';
 import type { Metadata } from 'next';
-export const metadata:Metadata={title:'Compare Boodoo | Care, memories and photo books',alternates:{canonical:'/compare'}};
-const competitors=[
- ['Huckleberry','Daily tracking, SweetSpot nap predictions, and expert-designed sleep plans.','Boodoo’s iOS app brings care logs, routine estimates, and Ask BooDoo together with memories. Expert sleep coaching is not included.','https://huckleberrycare.com/'],
- ['Qeepsake','Personalized journaling prompts, family contributors, and customizable printed memory books.','Boodoo has daily memories, milestones, and book drafts. Web editing is available as a preview; printing and text-message journaling are not live.','https://qeepsake.com/features/'],
- ['FamilyAlbum','Private family photo/video sharing, comments, monthly organization, and photobooks.','Boodoo connects care and memories in the same child profile. Web records are read-only; social comments and automatic monthly print subscriptions are not included.','https://family-album.com/'],
- ['Mixbook','An advanced photo-book editor with Auto-Create, layout tools, image editing, and collaboration.','Boodoo’s first web studio supports titles, captions, styles, page order, and personal preview export. Advanced layouts, collaborative editing, and production checkout remain future work.','https://www.mixbook.com/studio']
+import { ArrowRight, BookOpen, Heart, Sparkles } from 'lucide-react';
+import { Header, Footer } from '@/components/v2/header';
+
+const description = 'Compare BooDoo with Huckleberry, Qeepsake, FamilyAlbum and Mixbook. Find the right fit for daily care, insights, pregnancy and family memories.';
+export const metadata: Metadata = {
+  title: 'BooDoo compared | Baby tracking, insights & memory books',
+  description,
+  alternates: { canonical: '/compare' },
+  openGraph: {
+    title: 'Why BooDoo? Daily care, insights and their personal story',
+    description,
+    url: 'https://www.boodoo.app/compare',
+    type: 'website',
+  },
+};
+
+const reasons = [
+  { icon: Heart, title: 'Keep the day together.', copy: 'Log feeds, breastfeeding, pumped milk, sleep and diapers from the main screen. Keep care, growth and milestones in the same child’s profile.' },
+  { icon: Sparkles, title: 'Make sense of your records.', copy: 'Ask BooDoo about the details you have logged. Explore patterns, changes and routines with your child’s own records as context.' },
+  { icon: BookOpen, title: 'Keep more than the numbers.', copy: 'Photos, a few words and little firsts build a personal daily book. Pregnancy, baby and toddler stages bring different tools into focus.' },
 ];
-const features=[['Daily feeding, sleep and care','Available in iOS','Read-only synced record view'],['Pregnancy and age-based experiences','Available in iOS','App overview and family profiles'],['Health Stories and planned care','Available in iOS','Care records; full story editor is future work'],['Growth and development','WHO charts and milestones in iOS','Measurements and milestone history'],['Ask BooDoo and routine estimates','Available in iOS','Web AI chat is future work'],['Shared access across multiple iPhones','Parents and invited caregivers access the same child’s shared data','Email/password login integration; Firebase web setup required'],['Caregiver Card and Lock Screen sleep','24-hour care summary and sleep Live Activity','Explained in the app feature guide'],['Trends and patterns','14-, 30-, and 90-day Evolution views','Explained in the app feature guide'],['Android','Coming next; not available yet','No Android release date announced'],['Memories and photos','Available in iOS','Browse synced memories; account access required'],['Album creation','Draft builder and 8/3/3 unlock gate','Studio preview, styles, captions, ordering pages, personal exports'],['Cloud album drafts','Web-specific data model','Requires additive rules and feature activation'],['Printed books and order tracking','Not a live Boodoo service','Supplier, payments and fulfillment integration pending']];
-export default function Compare(){return <div className="boodoo-v2"><Header/><main id="main"><section className="page-intro"><span className="eyebrow">FIND THE RIGHT FIT FOR YOUR FAMILY</span><h1>Care. Memories.<br/><em>A bigger picture.</em></h1><p>Some apps focus on sleep. Others focus on photos or books. Boodoo’s direction is to connect daily care with the story of growing up.</p></section><section className="comparison-wrap"><h2>What the leading alternatives do well.</h2><p>A focused comparison of selected capabilities, based on the official pages linked below. Products and plans change; this is not an exhaustive feature or pricing comparison.</p><div className="comparison-scroll"><table className="comparison-table"><thead><tr><th>Product</th><th>Known strengths</th><th>How Boodoo compares today</th></tr></thead><tbody>{competitors.map(([name,strength,response,url])=><tr key={name}><td><a href={url} target="_blank" rel="noreferrer">{name} ↗</a></td><td>{strength}</td><td>{response}</td></tr>)}</tbody></table></div><h2>What’s in Boodoo—and what’s next.</h2><p>The existing iOS app and the new website have different capabilities. This keeps their current status clear.</p><div className="comparison-scroll"><table className="comparison-table"><thead><tr><th>Capability</th><th>Boodoo app</th><th>Website version 2</th></tr></thead><tbody>{features.map(row=><tr key={row[0]}>{row.map((s,i)=><td key={i}>{s}</td>)}</tr>)}</tbody></table></div><div className="scope-note"><b>A thoughtful roadmap, not a claim of complete parity.</b><br/>The next priorities are production account setup, reliable album storage, original-resolution photo handling, a supplier-specific print pipeline, payment and order tracking. More advanced editing and social features come after those foundations.</div><div className="source-links">{competitors.map(([n,,,u])=><a href={u} key={n} target="_blank" rel="noreferrer">{n} official features</a>)}</div><p className="quiet-note">Reviewed October 13, 2026. Competitor capabilities may depend on plan and country.</p><div className="button-row"><a href="/family?demo=1" className="v2-button">Explore Boodoo’s web preview <ArrowRight size={17}/></a></div></section></main><Footer/></div>}
+
+const alternatives = [
+  {
+    name: 'Huckleberry',
+    url: 'https://huckleberrycare.com/pricing',
+    strength: 'Daily tracking and reports, with SweetSpot nap predictions, data-based insights and expert-designed sleep plans on paid memberships.',
+    boodoo: 'Choose BooDoo when you want feeding, sleep and care connected with development, personal photos and a daily journal. Ask BooDoo helps you explore your logs. Editable nap and bedtime plans are coming in the next Pro update; individual specialist consultations are not included.',
+  },
+  {
+    name: 'Qeepsake',
+    url: 'https://qeepsake.com/features/',
+    strength: 'Scheduled text prompts, photo journals and customizable printed books. Family contributors are available with its Premium membership.',
+    boodoo: 'Choose BooDoo when memories are part of your everyday care routine. Save photos and words alongside milestones, then arrange a chapter in the web studio preview. Text-message journaling is not included.',
+  },
+  {
+    name: 'FamilyAlbum',
+    url: 'https://family-album.com/',
+    strength: 'Private photo and video sharing, monthly organization, family comments and reactions, plus prints and photobooks.',
+    boodoo: 'Choose BooDoo when sharing also means knowing the last feed, sleep or care entry. A Pro family owner can connect invited caregivers, who can use Free, to shared child records across Apple devices and keep personal memories together.',
+  },
+  {
+    name: 'Mixbook',
+    url: 'https://www.mixbook.com/studio',
+    strength: 'A dedicated photo-book service with Auto-Create, customizable layouts, two-page spreads, collaborative editing and printed ordering.',
+    boodoo: 'Choose BooDoo to start a book from the Moments you already keep. The web studio preview offers 1–4-photo layouts, editable captions, individual photo framing and double-page spreads. Printed ordering is not available yet.',
+  },
+];
+
+export default function Compare() {
+  return (
+    <div className="boodoo-v2">
+      <Header />
+      <main id="main">
+        <section className="page-intro">
+          <span className="eyebrow">WHY FAMILIES CHOOSE BOODOO</span>
+          <h1>The care you log.<br /><em>The story you keep.</em></h1>
+          <p>BooDoo brings quick daily tracking, insights from your records and personal memories together. One place to understand their day and remember it.</p>
+          <div className="button-row">
+            <Link className="v2-button" href="/pricing">Explore Free &amp; Pro <ArrowRight size={17} /></Link>
+            <Link className="text-link" href="/#feature-guide">See the app features <ArrowRight size={17} /></Link>
+          </div>
+        </section>
+
+        <section className="comparison-wrap" aria-labelledby="boodoo-reasons">
+          <h2 id="boodoo-reasons">Useful today. Personal for years.</h2>
+          <div className="feature-grid">
+            {reasons.map(({ icon: Icon, title, copy }) => (
+              <article className="feature-tile" key={title}>
+                <Icon size={26} aria-hidden="true" />
+                <h3>{title}</h3>
+                <p>{copy}</p>
+              </article>
+            ))}
+          </div>
+
+          <h2>Find the fit for your family.</h2>
+          <p>Each app has strengths. This comparison focuses on what you want to do, so you can choose the tools that matter to you.</p>
+          <div className="comparison-scroll">
+            <table className="comparison-table">
+              <caption className="quiet-note">Selected capabilities, checked against the official product pages linked in each row.</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Alternative</th>
+                  <th scope="col">What it offers</th>
+                  <th scope="col">Why consider BooDoo</th>
+                </tr>
+              </thead>
+              <tbody>
+                {alternatives.map(({ name, url, strength, boodoo }) => (
+                  <tr key={name}>
+                    <th scope="row"><a href={url} target="_blank" rel="noreferrer">{name} ↗</a></th>
+                    <td>{strength}</td>
+                    <td>{boodoo}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="quiet-note">Reviewed October 15, 2026. Published by BooDoo. This is a selected feature comparison; availability can depend on plan, age, device and country.</p>
+
+          <h2>Start with the app. Explore the book studio.</h2>
+          <p>The BooDoo iPhone and iPad app is where you log daily care, use Ask BooDoo and save Moments. Free and Pro include different tools, with the details on our pricing page.</p>
+          <div className="scope-note">
+            <strong>The website’s album studio is a preview.</strong><br />
+            Try photo layouts, crops, captions, page order and two-page spreads, then save your draft. Demo changes stay in your browser. Printed ordering is unavailable, and a personal preview is not a print proof.
+          </div>
+          <div className="button-row">
+            <Link className="v2-button" href="/pricing">Find your BooDoo plan <ArrowRight size={17} /></Link>
+            <Link className="v2-button outline" href="/family?demo=1&view=albums">Try the book studio <ArrowRight size={17} /></Link>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </div>
+  );
+}

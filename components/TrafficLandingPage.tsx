@@ -86,7 +86,7 @@ export default function TrafficLandingPage({ page }: { page: TrafficPageContent 
         <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-5 sm:px-8">
           <Link href="/" className="flex items-center gap-3" aria-label="BooDoo home">
             <Image
-              src="/icons/boodoo-icon.png"
+              src="/icons/boodoo-mark.png"
               alt=""
               width={40}
               height={40}
@@ -341,7 +341,7 @@ export default function TrafficLandingPage({ page }: { page: TrafficPageContent 
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 text-sm font-bold text-[#74727e] sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <Link href="/" className="flex items-center gap-3 text-[#30303d]">
             <Image
-              src="/icons/boodoo-icon.png"
+              src="/icons/boodoo-mark.png"
               alt=""
               width={32}
               height={32}
