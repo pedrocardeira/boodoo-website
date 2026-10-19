@@ -11,7 +11,7 @@ function escapeHTML(s:string){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'
 function download(name:string,data:string,type:string){const u=URL.createObjectURL(new Blob([data],{type}));const a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
 async function dataURL(blob:Blob):Promise<string>{return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result));r.onerror=()=>reject(new Error('Could not read this photo.'));r.readAsDataURL(blob);});}
 async function dimensions(src:string):Promise<{width:number;height:number}>{return new Promise((resolve,reject)=>{const i=new Image();i.onload=()=>resolve({width:i.naturalWidth,height:i.naturalHeight});i.onerror=()=>reject(new Error('This photo could not be opened. Try a JPEG or PNG.'));i.src=src;});}
-export default function AlbumStudio({initial,demo,user,onSave,onClose,sourceMoments,birthDate}:{initial:Album;demo:boolean;user:User|null;onSave:(album:Album)=>Promise<string>;onClose:()=>void;sourceMoments:Moment[];birthDate:number}){
+export default function AlbumStudio({initial,demo,user,onSave,onClose,sourceMoments,birthDate}:{initial:Album;demo:boolean;user:User|null;onSave:(album:Album)=>Promise<{message:string;album:Album}>;onClose:()=>void;sourceMoments:Moment[];birthDate:number}){
  const [album,setAlbum]=useState<Album>(initial);const [selected,setSelected]=useState(0);const [message,setMessage]=useState('');const [error,setError]=useState('');const [busy,setBusy]=useState(false);const [dirty,setDirty]=useState(false);const [preview,setPreview]=useState(false);const [printProgress,setPrintProgress]=useState('');const [from,setFrom]=useState('');const [to,setTo]=useState('');const [country,setCountry]=useState((process.env.NEXT_PUBLIC_BOOK_SHIPPING_COUNTRIES||'US').split(',')[0]);
  const checkoutAvailable=process.env.NEXT_PUBLIC_BOOK_CHECKOUT_ENABLED==='true';
  const shippingCountries=(process.env.NEXT_PUBLIC_BOOK_SHIPPING_COUNTRIES||'US').split(',').filter(v=>/^[A-Z]{2}$/.test(v));
@@ -20,7 +20,7 @@ export default function AlbumStudio({initial,demo,user,onSave,onClose,sourceMome
  const moment=album.moments[selected-1];const issues=albumIssues(album);const meaningful=album.moments.filter(m=>m.title.trim()||m.notes.trim()||m.image);const photos=meaningful.filter(m=>m.image).length;const days=new Set(meaningful.map(m=>new Date(m.date).toLocaleDateString())).size;const ready=meaningful.length>=3;const meetsEditorialGoals=meaningful.length>=8&&photos>=3&&days>=3;const availablePeriods=ageCompletedBookPeriods(birthDate).filter(period=>selectPeriod(sourceMoments,period,birthDate).filter(m=>m.title.trim()||m.notes.trim()||m.image).length>=3);
  function update(p:Partial<Album>){setAlbum(a=>({...a,...p}));setDirty(true);setMessage('');}
  function updateMoment(p:Partial<Moment>){update({moments:album.moments.map((m,i)=>i===selected-1?{...m,...p}:m)});}
- async function save(){setBusy(true);setError('');try{setMessage(await onSave(album));setDirty(false);}catch(e){setError(e instanceof Error?e.message:'Could not save. Export a backup.');}finally{setBusy(false);}}
+ async function save(){setBusy(true);setError('');try{const result=await onSave(album);setAlbum(result.album);setMessage(result.message);setDirty(false);}catch(e){setError(e instanceof Error?e.message:'Could not save. Export a backup.');}finally{setBusy(false);}}
  async function exportPrintProof(){
   setBusy(true);setError('');setMessage('');setPrintProgress('Preparing pages...');
   try{
