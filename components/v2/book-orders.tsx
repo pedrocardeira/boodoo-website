@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import type { User } from 'firebase/auth';
 
 type OrderRow = { id: string; albumId: string; createdAt: string;
-  status: string; amountTotal: number; currency: string; prodigiStage?: string | null };
+  status: string; amountTotal: number; currency: string; prodigiStage?: string | null; tracking?: Array<{ url?: string; number?: string }> };
 
 export default function BookOrders({ user }: { user: User | null }) {
   const [orders, setOrders] = useState<OrderRow[]>([]);
@@ -36,6 +36,8 @@ export default function BookOrders({ user }: { user: User | null }) {
           <strong>Book order {order.id.slice(0, 8)}</strong>
           <p>{new Date(order.createdAt).toLocaleDateString()} · {order.status.replaceAll('_', ' ')}
             {order.prodigiStage ? ' · Printing: ' + order.prodigiStage : ''}</p>
+          {order.tracking?.map((t, i) => t.url ? <a key={i} href={t.url} target="_blank" rel="noopener noreferrer">Track shipment{t.number ? ' ' + t.number : ''}</a> :
+            <span key={i}>Tracking: {t.number}</span>)}
         </div>
         <span>{new Intl.NumberFormat(undefined, { style: 'currency', currency: order.currency.toUpperCase() })
           .format(order.amountTotal / 100)}</span>
