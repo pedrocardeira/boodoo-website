@@ -52,7 +52,7 @@ match /users/{uid}/webAlbumProofs/{albumID}/{proofID} {
     && request.resource.size < 75 * 1024 * 1024
     && request.resource.contentType == 'application/pdf';
   allow update: if false; // Immutable upload; prevent approved proof replacement.
-  allow delete: if request.auth != null && request.auth.uid == uid;
+  allow delete: if false; // Retention-aware service-account cleanup only.
 }
 ```
 
