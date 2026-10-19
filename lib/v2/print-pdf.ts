@@ -116,13 +116,13 @@ function splitStory(moment: Moment, format: PrintFormat, title: string): Planned
   const { canvas, ctx } = canvasFor(format);
   const px = canvas.width / format.widthMm;
   const side = Boolean(moment.image);
-  const contentWidth = (side ? format.widthMm * 0.32 - 14 : format.widthMm - 38) * px;
+  const contentWidth = (side ? format.widthMm * 0.36 - 18 : format.widthMm - 36) * px;
   const fontSize = Math.max(11, Math.round(3.1 * px));
   ctx.font = fontSize + 'px system-ui, Arial, sans-serif';
   const lines = wrap(ctx, moment.notes || '', contentWidth);
   const lineHeight = Math.round(4.8 * px);
-  const maxLines = side ? Math.max(2, Math.floor((format.heightMm - 70) * px / lineHeight))
-                        : Math.max(2, Math.floor((format.heightMm - 66) * px / lineHeight));
+  const maxLines = side ? Math.max(2, Math.floor((format.heightMm - 100) * px / lineHeight))
+                        : Math.max(2, Math.floor((format.heightMm - 95) * px / lineHeight));
   const out: PlannedPage[] = [];
   // First page has the photo when present, plus a limited narrative side column.
   const first = lines.splice(0, maxLines).join('\n');
