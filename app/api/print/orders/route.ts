@@ -16,7 +16,7 @@ export async function GET(request: Request) {
         id: o.id, albumId: o.albumId, createdAt: o.createdAt,
         status: o.status, amountTotal: o.amountTotal,
         currency: o.currency, countryCode: o.countryCode,
-        prodigiStage: o.prodigiStage || null,
+        prodigiStage: o.prodigiStage || null, tracking: o.tracking || [],
       }));
     return NextResponse.json({ orders: safe }, { headers: { 'Cache-Control': 'private, no-store' } });
   } catch {
