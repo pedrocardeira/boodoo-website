@@ -8,7 +8,7 @@ function firebaseProject(): string {
   return process.env.FIREBASE_PROJECT_ID || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '';
 }
 
-function serviceAccount(): ServiceAccount {
+export function serviceAccount(): ServiceAccount {
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
   if (!raw) throw new Error('Server database access is not configured.');
   const account = JSON.parse(raw) as ServiceAccount;
@@ -21,14 +21,14 @@ function base64url(value: string | Buffer): string {
   return Buffer.from(value).toString('base64url');
 }
 
-async function googleToken(): Promise<string> {
+export async function googleToken(): Promise<string> {
   if (cachedToken && Date.now() < cachedToken.until) return cachedToken.token;
   const account = serviceAccount();
   const now = Math.floor(Date.now() / 1000);
   const jwtHeader = base64url(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
   const claims = base64url(JSON.stringify({
     iss: account.client_email,
-    scope: 'https://www.googleapis.com/auth/datastore',
+    scope: 'https://www.googleapis.com/auth/datastore https://www.googleapis.com/auth/devstorage.read_only',
     aud: 'https://oauth2.googleapis.com/token',
     iat: now, exp: now + 3600, jti: randomUUID(),
   }));
