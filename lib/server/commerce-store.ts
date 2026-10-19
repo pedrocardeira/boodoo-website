@@ -1,4 +1,3 @@
-import 'server-only';
 import { createSign, randomUUID } from 'node:crypto';
 
 type Stored<T> = { data: T; updateTime: string };
