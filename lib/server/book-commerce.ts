@@ -119,7 +119,22 @@ export function verifyApprovedManifest(uid: string, manifest: BookManifest): voi
     throw new Error('The print manifest is not signed by the trusted server.');
   }
 }
-export async function verifySupplierQuote(manifest: BookManifest, countryCode: string): Promise<void> {
+export type SupplierQuote = {
+  currency: string; productionCents: number; shippingCents: number;
+  supplierTotalCents: number; shippingMethod: 'Standard';
+};
+function cents(amount: unknown): number {
+  if (typeof amount !== 'string' || !/^(0|[1-9]\\d*)(\\.\\d{1,2})?$/.test(amount)) {
+    throw new Error('Supplier returned an invalid monetary amount.');
+  }
+  const [major, minor = ''] = amount.split('.');
+  const value = Number(major) * 100 + Number(minor.padEnd(2,'0'));
+  if (!Number.isSafeInteger(value)) throw new Error('Supplier amount is outside safe range.');
+  return value;
+}
+export async function verifySupplierQuote(
+  manifest: Pick<BookManifest, 'sku'|'assets'>, countryCode: string
+): Promise<SupplierQuote> {
   if (!/^[A-Z]{2}$/.test(countryCode)) throw new Error('Invalid shipping destination.');
   const key = process.env.PRODIGI_API_KEY;
   if (!key) throw new Error('Prodigi credentials are missing.');
@@ -127,14 +142,37 @@ export async function verifySupplierQuote(manifest: BookManifest, countryCode: s
   const response = await fetch(base + '/v4.0/quotes', {
     method: 'POST', headers: { 'X-API-Key': key, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      destinationCountryCode: countryCode,
+      destinationCountryCode: countryCode, shippingMethod: 'Standard',
       currencyCode: 'USD',
-      items: [{ sku: manifest.sku, copies: 1, attributes: {}, assets: manifest.assets.map(a => ({ printArea: a.printArea, pageCount: a.pageCount })) }],
+      items: [{ sku: manifest.sku, copies: 1, attributes: {},
+        assets: manifest.assets.map(a => ({ printArea: a.printArea, pageCount: a.pageCount })) }],
     }), cache: 'no-store', signal: AbortSignal.timeout(15000),
   });
   if (!response.ok) throw new Error('Prodigi cannot quote this book/destination.');
-  const value = await response.json() as { quotes?: unknown[] };
-  if (!Array.isArray(value.quotes) || value.quotes.length === 0) throw new Error('No Prodigi quote is available for this destination.');
+  const value = await response.json() as {
+    quotes?: Array<{ shipmentMethod?: string; costSummary?: {
+      items?: { amount?: string; currency?: string };
+      shipping?: { amount?: string; currency?: string };
+    }; issues?: unknown[] }>; issues?: unknown[];
+  };
+  if (value.issues?.length) throw new Error('Prodigi reported quote issues requiring review.');
+  const quote = value.quotes?.find(q => q.shipmentMethod?.toLowerCase() === 'standard');
+  if (!quote?.costSummary || quote.issues?.length ||
+      quote.costSummary.items?.currency?.toUpperCase() !== 'USD' ||
+      quote.costSummary.shipping?.currency?.toUpperCase() !== 'USD') {
+    throw new Error('Prodigi Standard USD shipping quote is unavailable or requires review.');
+  }
+  const productionCents = cents(quote.costSummary.items.amount);
+  const shippingCents = cents(quote.costSummary.shipping.amount);
+  return { currency: 'usd', shippingMethod: 'Standard', productionCents, shippingCents,
+    supplierTotalCents: productionCents + shippingCents };
+}
+export function minimumRetailTotal(supplierTotalCents: number, grossMarginPercent: number): number {
+  if (!Number.isSafeInteger(supplierTotalCents) || supplierTotalCents <= 0 ||
+      !Number.isFinite(grossMarginPercent) || grossMarginPercent < 0 || grossMarginPercent >= 80) {
+    throw new Error('Retail margin configuration is invalid.');
+  }
+  return Math.ceil(supplierTotalCents / (1 - grossMarginPercent / 100));
 }
 export async function createStripeSession(order: BookOrder, email: string, origin: string): Promise<{ id: string; url: string }> {
   if (!checkoutEnabled()) throw new Error('Photo book checkout is not available yet.');
