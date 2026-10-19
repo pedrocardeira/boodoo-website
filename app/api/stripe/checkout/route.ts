@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { assertHouseholdMember, createRecord, getAlbumSummary, readRecord, replaceRecord, verifiedUser } from '@/lib/server/commerce-store';
-import { type BookManifest, type BookOrder, checkedPrice, checkoutEnabled, createStripeSession, manifestPath, orderPath, shippingPriceId, validateManifest, verifySupplierQuote } from '@/lib/server/book-commerce';
+import { type BookManifest, type BookOrder, checkedPrice, checkoutEnabled, createStripeSession, manifestPath, orderPath, shippingPriceId, verifyApprovedManifest, verifySupplierQuote } from '@/lib/server/book-commerce';
 
 export const runtime = 'nodejs';
 
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
         manifest.albumUpdatedAt !== album.updatedAt) {
       return bad('This album needs a new print-ready approval before ordering.', 409);
     }
-    validateManifest(manifest);
+    verifyApprovedManifest(user.uid, manifest);
 
     const bookPriceId = process.env.STRIPE_BOOK_PRICE_ID;
     if (!bookPriceId) return bad('Book retail price has not been configured.', 503);
