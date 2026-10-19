@@ -5,7 +5,7 @@ export type BookManifest = {
   albumId: string; albumUpdatedAt: string; childID: string;
   sku: string; pageCount: number; approved: true; approvedBy: string;
   assets: Array<{ printArea: string; url: string; pageCount: number }>;
-  approvedAt: string;
+  approvedAt: string; signature?: string;
 };
 export type BookOrder = {
   id: string; uid: string; albumId: string; childID: string;
@@ -92,6 +92,29 @@ export function validateManifest(input: BookManifest): void {
         !hosts.includes(new URL(asset.url).hostname.toLowerCase())) {
       throw new Error('Untrusted, expired, or inconsistent print file reference.');
     }
+  }
+}
+function manifestMessage(uid: string, m: BookManifest): string {
+  return JSON.stringify({
+    uid, albumId: m.albumId, albumUpdatedAt: m.albumUpdatedAt,
+    childID: m.childID, sku: m.sku, pageCount: m.pageCount,
+    approvedBy: m.approvedBy, approvedAt: m.approvedAt,
+    assets: m.assets.map(a => ({
+      printArea: a.printArea, url: a.url, pageCount: a.pageCount,
+    })),
+  });
+}
+export function signApprovedManifest(uid: string, manifest: BookManifest): string {
+  const secret = process.env.BOOK_MANIFEST_SIGNING_SECRET || '';
+  if (secret.length < 32) throw new Error('Secure print approval signing is not configured.');
+  return createHmac('sha256', secret).update(manifestMessage(uid, manifest)).digest('hex');
+}
+export function verifyApprovedManifest(uid: string, manifest: BookManifest): void {
+  validateManifest(manifest);
+  if (!manifest.signature || !/^[0-9a-f]{64}$/.test(manifest.signature) ||
+      !timingSafeEqual(Buffer.from(manifest.signature, 'hex'),
+        Buffer.from(signApprovedManifest(uid, manifest), 'hex'))) {
+    throw new Error('The print manifest is not signed by the trusted server.');
   }
 }
 export async function verifySupplierQuote(manifest: BookManifest, countryCode: string): Promise<void> {
