@@ -1,79 +1,91 @@
+import { randomUUID } from 'node:crypto';
 import { NextResponse } from 'next/server';
+import { assertHouseholdMember, createRecord, getAlbumSummary, readRecord, replaceRecord, verifiedUser } from '@/lib/server/commerce-store';
+import { type BookManifest, type BookOrder, checkedPrice, checkoutEnabled, createStripeSession, manifestPath, orderPath, shippingPriceId, validateManifest, verifySupplierQuote } from '@/lib/server/book-commerce';
 
 export const runtime = 'nodejs';
 
-// Stripe Checkout is deliberately disabled until print pricing, order tracking,
-// fulfillment and payment confirmation have been completed.
-function isConfiguredUrl(value: string | undefined): value is string {
-  if (!value) return false;
-  try {
-    const url = new URL(value);
-    return url.protocol === 'https:' && !['example.com', 'www.example.com'].includes(url.hostname);
-  } catch {
-    return false;
-  }
+function bad(message: string, status = 400): NextResponse {
+  return NextResponse.json({ error: message }, { status, headers: { 'Cache-Control': 'no-store' } });
 }
-
-export async function POST() {
-  if (process.env.STRIPE_CHECKOUT_ENABLED !== 'true') {
-    return NextResponse.json({ error: 'Photo book checkout is not available yet.' }, { status: 503 });
+export async function POST(request: Request) {
+  if (!checkoutEnabled()) return bad('Printed book checkout is not available yet.', 503);
+  // A public payment must never be enabled until paid orders can be fulfilled.
+  if (process.env.PRINT_FULFILLMENT_ENABLED !== 'true' || !process.env.STRIPE_WEBHOOK_SECRET ||
+      !process.env.FIREBASE_SERVICE_ACCOUNT_JSON || !process.env.PRODIGI_API_KEY) {
+    return bad('Print ordering is not fully configured.', 503);
   }
+  const liveKey = process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_');
+  if (liveKey && (process.env.BOOK_COMMERCE_LIVE_ENABLED !== 'true' ||
+      process.env.PRODIGI_ENVIRONMENT !== 'production')) return bad('Live printing is not approved.', 503);
+  if (!liveKey && process.env.PRODIGI_ENVIRONMENT === 'production') return bad('Test payments cannot create live print jobs.', 503);
 
-  const secret = process.env.STRIPE_SECRET_KEY;
-  const price = process.env.STRIPE_BOOK_PRICE_ID;
-  const successUrl = process.env.STRIPE_SUCCESS_URL;
-  const cancelUrl = process.env.STRIPE_CANCEL_URL;
+  let user;
+  try { user = await verifiedUser(request); }
+  catch { return bad('Please sign in to order your book.', 401); }
 
-  if (!secret || !price || !price.startsWith('price_') || price === 'price_...' ||
-      !isConfiguredUrl(successUrl) || !isConfiguredUrl(cancelUrl)) {
-    return NextResponse.json({ error: 'Photo book checkout is not configured.' }, { status: 503 });
+  let input: { albumId?: string; countryCode?: string };
+  try { input = await request.json(); }
+  catch { return bad('Invalid checkout request.'); }
+
+  const albumId = input?.albumId;
+  const country = input?.countryCode?.toUpperCase();
+  if (!albumId || !/^[a-zA-Z0-9_-]{1,128}$/.test(albumId) || !country || !/^[A-Z]{2}$/.test(country)) {
+    return bad('Select a saved album and supported destination.');
   }
-
-  // The HTTPS API is equivalent to stripe.checkout.sessions.create(), with no
-  // new package dependency or changes to the existing pnpm lockfile.
-  // Payment mode is for a one-time physical book, not BooDoo Pro subscriptions.
-  const form = new URLSearchParams({
-    ui_mode: 'hosted_page',
-    mode: 'payment',
-    billing_address_collection: 'auto',
-    'phone_number_collection[enabled]': 'false',
-    'automatic_tax[enabled]': 'false',
-    allow_promotion_codes: 'false',
-    submit_type: 'auto',
-    integration_identifier: 'hosted_mobile_app_0001',
-    origin_context: 'mobile_app',
-    success_url: successUrl,
-    cancel_url: cancelUrl,
-    'line_items[0][price]': price,
-    'line_items[0][quantity]': '1',
-  });
-  // Do not send payment_method_collection in one-time payment mode.
 
   try {
-    const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
-      method: 'POST',
-      headers: {
-        Authorization: 'Bearer ' + secret,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: form.toString(),
-      cache: 'no-store',
-    });
-
-    if (!response.ok) {
-      // Avoid sending Stripe error details, keys or request data to clients.
-      return NextResponse.json({ error: 'Unable to start checkout.' }, { status: 502 });
+    const album = await getAlbumSummary(user.uid, albumId);
+    if (!album) return bad('Save your album before ordering.', 404);
+    await assertHouseholdMember(user.uid, album.childID);
+    const approved = await readRecord<BookManifest>(manifestPath(user.uid, albumId));
+    const manifest = approved?.data;
+    if (!manifest || manifest.albumId !== albumId || manifest.childID !== album.childID ||
+        manifest.albumUpdatedAt !== album.updatedAt) {
+      return bad('This album needs a new print-ready approval before ordering.', 409);
     }
+    validateManifest(manifest);
 
-    const session = (await response.json()) as { url?: string };
-    if (!session.url || !session.url.startsWith('https://checkout.stripe.com/')) {
-      return NextResponse.json({ error: 'Stripe did not return a checkout URL.' }, { status: 502 });
+    const bookPriceId = process.env.STRIPE_BOOK_PRICE_ID;
+    if (!bookPriceId) return bad('Book retail price has not been configured.', 503);
+    const [bookPrice, shippingPrice] = await Promise.all([
+      checkedPrice(bookPriceId), checkedPrice(shippingPriceId(country)),
+    ]);
+    if (bookPrice.currency !== shippingPrice.currency || bookPrice.livemode !== shippingPrice.livemode) {
+      return bad('Book and shipping prices must use the same currency and environment.', 503);
     }
+    await verifySupplierQuote(manifest, country);
 
-    const redirect = NextResponse.redirect(session.url, 303);
-    redirect.headers.set('Cache-Control', 'no-store');
-    return redirect;
-  } catch {
-    return NextResponse.json({ error: 'Unable to contact checkout.' }, { status: 502 });
+    const id = randomUUID();
+    const now = new Date().toISOString();
+    const order: BookOrder = {
+      id, uid: user.uid, albumId, childID: album.childID,
+      status: 'creating_checkout', fulfillmentState: 'not_started',
+      createdAt: now, updatedAt: now,
+      amountTotal: bookPrice.unit_amount + shippingPrice.unit_amount, currency: bookPrice.currency,
+      countryCode: country, productPriceId: bookPrice.id, shippingPriceId: shippingPrice.id,
+      manifest,
+    };
+    const path = orderPath(user.uid, id);
+    await createRecord(path, order);
+    try {
+      const session = await createStripeSession(order, user.email, new URL(request.url).origin);
+      const current = await readRecord<BookOrder>(path);
+      if (!current) throw new Error('Order could not be persisted.');
+      await replaceRecord(path, {
+        ...order, status: 'awaiting_payment', stripeSessionId: session.id, updatedAt: new Date().toISOString(),
+      }, current.updateTime);
+      return NextResponse.json({ url: session.url, orderId: id }, { headers: { 'Cache-Control': 'no-store' } });
+    } catch {
+      const current = await readRecord<BookOrder>(path);
+      if (current) await replaceRecord(path, { ...current.data, status: 'payment_failed', updatedAt: new Date().toISOString() }, current.updateTime);
+      throw new Error('Unable to prepare book checkout.');
+    }
+  } catch (error) {
+    // Expected readiness and configuration errors may be shown; never return secrets or raw provider responses.
+    const msg = error instanceof Error ? error.message : 'Checkout unavailable.';
+    const publicError = /approved|configured|not available|cannot quote|valid Stripe price|shipping|destination|checkout|album|book|family|payment|photo|untrusted|supplier|Prodigi|retail/i.test(msg)
+      ? msg : 'Could not start checkout. Please try again.';
+    return bad(publicError, 503);
   }
 }
