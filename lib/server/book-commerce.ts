@@ -17,7 +17,7 @@ export type BookOrder = {
   productPriceId: string; shippingPriceId: string;
   manifest: BookManifest;
   recipient?: ProdigiRecipient;
-  prodigiId?: string; prodigiStage?: string; lastError?: string;
+  prodigiId?: string; prodigiStage?: string; tracking?: Array<{ url?: string; number?: string }>; lastError?: string;
 };
 export type ProdigiRecipient = {
   name: string;
@@ -194,12 +194,20 @@ export async function submitProdigi(order: BookOrder): Promise<{ id: string; sta
   const key = process.env.PRODIGI_API_KEY;
   if (!key) throw new Error('Prodigi key is missing.');
   const base = process.env.PRODIGI_ENVIRONMENT === 'production' ? 'https://api.prodigi.com' : 'https://api.sandbox.prodigi.com';
+  const callbackRoot = process.env.PRODIGI_CALLBACK_URL;
+  const callbackSecret = process.env.PRODIGI_CALLBACK_SECRET;
+  if (!callbackRoot || !callbackSecret || !requireHTTPS(callbackRoot) || callbackSecret.length < 24) {
+    throw new Error('Authenticated Prodigi delivery callbacks are not configured.');
+  }
+  const callbackURL = new URL(callbackRoot);
+  callbackURL.searchParams.set('token', callbackSecret);
   const response = await fetch(base + '/v4.0/orders', {
     method: 'POST',
     headers: { 'X-API-Key': key, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       idempotencyKey: order.id,
-      merchantReference: order.id,
+      merchantReference: order.uid + ':' + order.id,
+      callbackUrl: callbackURL.toString(),
       shippingMethod: 'Standard',
       recipient: order.recipient,
       items: [{ sku: order.manifest.sku, copies: 1, sizing: 'fitPrintArea',
@@ -213,18 +221,32 @@ export async function submitProdigi(order: BookOrder): Promise<{ id: string; sta
   }
   return { id: result.order.id, stage: result.order.status?.stage || 'Submitted' };
 }
+export type ProdigiOrderDetails = { id: string; merchantReference: string; status?: { stage?: string }; shipments?: Array<{ tracking?: { url?: string; number?: string } }> };
+export async function getProdigiDetails(id: string): Promise<ProdigiOrderDetails> {
+  if (!/^ord_[a-zA-Z0-9_-]+$/.test(id) || !process.env.PRODIGI_API_KEY) throw new Error('Supplier order unavailable.');
+  const base = process.env.PRODIGI_ENVIRONMENT === 'production' ? 'https://api.prodigi.com' : 'https://api.sandbox.prodigi.com';
+  const response = await fetch(base + '/v4.0/orders/' + encodeURIComponent(id), {
+    headers: { 'X-API-Key': process.env.PRODIGI_API_KEY }, cache: 'no-store', signal: AbortSignal.timeout(12000),
+  });
+  if (!response.ok) throw new Error('Could not retrieve supplier order.');
+  const data = await response.json() as { order?: ProdigiOrderDetails };
+  if (data.order?.id !== id) throw new Error('Unexpected supplier order response.');
+  return data.order;
+}
+export function mergeProdigiDetails(order: BookOrder, details: ProdigiOrderDetails): BookOrder {
+  if (order.prodigiId !== details.id || details.merchantReference !== order.uid + ':' + order.id) {
+    throw new Error('Supplier order does not match the paid customer.');
+  }
+  const tracking = (details.shipments || []).flatMap(s => s.tracking ? [{
+    ...(s.tracking.url?.startsWith('https://') ? { url: s.tracking.url } : {}),
+    ...(s.tracking.number ? { number: s.tracking.number } : {}),
+  }] : []);
+  return { ...order, prodigiStage: details.status?.stage || order.prodigiStage,
+    tracking, updatedAt: new Date().toISOString() };
+}
 export async function refreshProdigi(order: BookOrder): Promise<BookOrder> {
   if (!order.prodigiId) return order;
-  const key = process.env.PRODIGI_API_KEY;
-  if (!key) return order;
-  const base = process.env.PRODIGI_ENVIRONMENT === 'production' ? 'https://api.prodigi.com' : 'https://api.sandbox.prodigi.com';
-  const response = await fetch(base + '/v4.0/orders/' + encodeURIComponent(order.prodigiId), {
-    headers: { 'X-API-Key': key }, cache: 'no-store', signal: AbortSignal.timeout(12000),
-  });
-  if (!response.ok) return order;
-  const value = await response.json() as { order?: { status?: { stage?: string } } };
-  const stage = value.order?.status?.stage;
-  return stage ? { ...order, prodigiStage: stage, updatedAt: new Date().toISOString() } : order;
+  return mergeProdigiDetails(order, await getProdigiDetails(order.prodigiId));
 }
 export async function runFulfillment(uid: string, id: string): Promise<void> {
   const path = orderPath(uid, id);
