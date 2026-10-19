@@ -1,10 +1,11 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { readRecord, replaceRecord } from './commerce-store';
+import { signedProofUrl } from './gcs-print-proof';
 
 export type BookManifest = {
   albumId: string; albumUpdatedAt: string; childID: string;
   sku: string; pageCount: number; approved: true; approvedBy: string;
-  assets: Array<{ printArea: string; url: string; pageCount: number }>;
+  assets: Array<{ printArea: string; url: string; pageCount: number; storagePath?: string; generation?: string }>;
   approvedAt: string; signature?: string;
 };
 export type BookOrder = {
@@ -101,6 +102,7 @@ function manifestMessage(uid: string, m: BookManifest): string {
     approvedBy: m.approvedBy, approvedAt: m.approvedAt,
     assets: m.assets.map(a => ({
       printArea: a.printArea, url: a.url, pageCount: a.pageCount,
+      storagePath: a.storagePath || '', generation: a.generation || '',
     })),
   });
 }
@@ -233,7 +235,9 @@ export async function submitProdigi(order: BookOrder): Promise<{ id: string; sta
       shippingMethod: 'Standard',
       recipient: order.recipient,
       items: [{ sku: order.manifest.sku, copies: 1, sizing: 'fitPrintArea',
-        assets: order.manifest.assets.map(a => ({ printArea: a.printArea, url: a.url, pageCount: a.pageCount })) }],
+        assets: order.manifest.assets.map(a => ({ printArea: a.printArea,
+          url: a.storagePath && a.generation ? signedProofUrl(a.storagePath, a.generation) : a.url,
+          pageCount: a.pageCount })) }],
     }), cache: 'no-store', signal: AbortSignal.timeout(20000),
   });
   if (!response.ok) throw new Error('Prodigi order submission failed.');
