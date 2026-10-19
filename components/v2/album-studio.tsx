@@ -29,7 +29,24 @@ export default function AlbumStudio({initial,demo,user,onSave,onClose,sourceMome
     const link=document.createElement('a');link.href=url;
     link.download='boodoo-'+album.id+'-'+print.pageCount+'-page-print-proof.pdf';
     link.click();setTimeout(()=>URL.revokeObjectURL(url),60000);
-    setMessage(print.pageCount+'-page 300dpi RGB PDF downloaded for review. This is a print proof, NOT an automatically approved production order.');
+    if(!demo&&user&&cloudAlbumsEnabled&&!dirty){
+      if(print.blob.size>75*1024*1024)throw new Error('The print PDF exceeds the safe 75 MB upload limit. Download succeeded; reduce the album size.');
+      setPrintProgress('Saving private print proof...');
+      const storagePath='users/'+user.uid+'/webAlbumProofs/'+album.id+'/'+crypto.randomUUID()+'.pdf';
+      await uploadBytes(ref(firebaseClient().storage,storagePath),print.blob,{
+        contentType:'application/pdf',
+        customMetadata:{
+          albumUpdatedAt:album.updatedAt,
+          pageCount:String(print.pageCount),
+          widthMm:String(print.widthMm),
+          heightMm:String(print.heightMm),
+          kind:'boodoo-print-proof',
+        },
+      });
+      setMessage(print.pageCount+'-page PDF downloaded and securely uploaded for staff print review. Proof path: '+storagePath+'. Checkout remains subject to print approval.');
+    }else{
+      setMessage(print.pageCount+'-page 300dpi RGB PDF downloaded for review. Save your album to upload a private proof. This is not an approved production order.');
+    }
   }catch(e){setError(e instanceof Error?e.message:'Unable to generate print PDF.');}
   finally{setBusy(false);setPrintProgress('');}
  }
