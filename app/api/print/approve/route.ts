@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { assertHouseholdMember, createRecord, getAlbumSummary, readRecord, replaceRecord, verifiedUser } from '@/lib/server/commerce-store';
-import { type BookManifest, manifestPath, validateManifest } from '@/lib/server/book-commerce';
+import { type BookManifest, manifestPath, signApprovedManifest, validateManifest } from '@/lib/server/book-commerce';
 
 export const runtime = 'nodejs';
 export async function POST(request: Request) {
@@ -39,6 +39,7 @@ export async function POST(request: Request) {
     if (manifest.assets.some(asset => {
       try { return !new URL(asset.url).pathname.toLowerCase().endsWith('.pdf'); } catch { return true; }
     })) throw new Error('Only approved print-ready PDF assets are accepted.');
+    manifest.signature = signApprovedManifest(data.ownerUid, manifest);
     const path = manifestPath(data.ownerUid, data.albumId);
     const prior = await readRecord<BookManifest>(path);
     if (prior) await replaceRecord(path, manifest, prior.updateTime);
