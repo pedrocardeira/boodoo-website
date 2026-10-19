@@ -1,85 +1,165 @@
-# BooDoo — Stripe Checkout, order tracking and Prodigi printing
+# BooDoo photo books — PDF proofs, Stripe Checkout and Prodigi
 
-## Status: code implemented, launch disabled
+## Current state — implementation present, sales disabled
 
-The server-side payment-to-print workflow and the authenticated website ordering UI are committed to the root Next.js app. **Real purchasing remains disabled intentionally.** The connected Stripe live account had **zero configured prices** when checked on 19 October 2026. The current web album editor exports a **personal HTML preview**, not the actual supplier-quality PDF needed for printing. No Prodigi Live key, approved printer SKU/production artwork, tax/shipping prices or paid-order testing has been established in this repository.
+**Do not enable real payments yet.** The repository includes an authenticated checkout,
+Stripe webhook verification, persistent order records, Prodigi Sandbox/Live adapters
+with idempotency, delivery tracking, and a new 300dpi PDF **proof** export.
+This is not a certified PDF/X-4 production pipeline and has not passed a complete
+paid-order-to-printer test. The connected live Stripe account had **no active
+one-time prices** when checked on October 19, 2026. Existing Apple BooDoo Pro
+subscriptions are unaffected.
 
-**Never turn on any live commerce flags until the complete checklist below is executed.** This integration never changes BooDoo Pro iOS subscriptions, which continue via Apple IAP.
+The proof export is designed around one **210 × 210 mm square hardcover**.
+This is only a preliminary format, not authorization to use any arbitrary Prodigi SKU.
+The final SKU, binding, spine artwork, page count and print areas must be confirmed
+against Prodigi's production specifications and a physical sample.
 
-## Implemented files
+## Completed code
 
-- [app/api/stripe/checkout/route.ts](app/api/stripe/checkout/route.ts) — Firebase-authenticated checkout; verifies owner-family-child linkage, server-approved album revision, supplier quote, active one-time Stripe book + shipping Price IDs and payment environment. Creates a server-owned persistent order before Stripe Checkout. Sends only server-chosen prices.
-- [app/api/stripe/webhook/route.ts](app/api/stripe/webhook/route.ts) — validates a raw Stripe webhook signature (HMAC-SHA256 + 5-minute timestamp tolerance), payment amount, currency, owner, order and session identity; transitions order statuses and starts print fulfillment only after verified payment.
-- [app/api/print/orders/route.ts](app/api/print/orders/route.ts) — logged-in order history (without exposing family medical details, print URLs or shipping addresses), plus admin-only idempotent retries and supplier status refresh.
-- [app/api/print/approve/route.ts](app/api/print/approve/route.ts) — admin-only approval of a print-ready PDF manifest bound to the current saved album revision and selected verified Prodigi SKU. **Approval is not a substitute for manually inspecting PDF page count, bleed, cover/spine and artwork.**
-- [app/api/prodigi/webhook/route.ts](app/api/prodigi/webhook/route.ts) — shared-secret-authenticated supplier callback. Re-fetches canonical Prodigi order over a server-key connection and cross-checks its merchant reference before updating production/shipping/tracking state.
-- [lib/server/commerce-store.ts](lib/server/commerce-store.ts) — server-only service account OAuth and Firestore REST storage (optimistic update-time conditions).
-- [lib/server/book-commerce.ts](lib/server/book-commerce.ts) — one-time payment validation, Stripe session operations, Prodigi quote/order/lookup helpers, permanent Prodigi `idempotencyKey`, stalled order recovery.
-- [components/v2/book-orders.tsx](components/v2/book-orders.tsx), [components/v2/album-studio.tsx](components/v2/album-studio.tsx), [components/v2/family-space.tsx](components/v2/family-space.tsx) — verified order history, print-stage links, optional buy button and non-misleading payment return notice.
-- [.env.example](.env.example) — all environment flags/secrets (intentionally blank/false).
-- This document — single source of truth for remaining launch steps.
+- [lib/v2/print-pdf.ts](lib/v2/print-pdf.ts): zero-dependency PDF 1.4 export.
+  Renders complete pages as high-resolution RGB JPEGs at 300dpi; front cover first,
+  individual memory pages, back cover last; 10mm safe margins for text;
+  rejects insufficient image resolution and clipped narrative content;
+  adds a meaningful chapter summary only to balance odd page counts, never blank filler.
+  **Not yet validated as PDF/X-4 or for a specific print lab.**
+- [components/v2/album-studio.tsx](components/v2/album-studio.tsx):
+  **Generate print PDF** download, progress indicator, and private Firebase Storage
+  proof upload for a saved cloud album. An unsaved/demo draft can download a local
+  proof but cannot be approved/ordered.
+- [lib/server/gcs-print-proof.ts](lib/server/gcs-print-proof.ts):
+  validates private proof metadata and generates V4 signed URLs pinned to an
+  immutable Cloud Storage object generation. Supplier URLs are refreshed on
+  submission, so customer proof approval need not depend on a previously expired link.
+- [app/api/print/proof-inspect/route.ts](app/api/print/proof-inspect/route.ts):
+  administrator-only endpoint returning a **15-minute** private PDF review link.
+- [app/api/print/approve/route.ts](app/api/print/approve/route.ts):
+  administrator signs an explicitly reviewed proof and its saved album revision.
+  No arbitrary customer-provided PDF can bypass this signing step.
+- [app/api/print/pricing-preview/route.ts](app/api/print/pricing-preview/route.ts):
+  administrator-only **real Prodigi Standard quote** and margin-based selling
+  price suggestion for a verified SKU, page count and shipping country.
+- [lib/server/book-commerce.ts](lib/server/book-commerce.ts):
+  Stripe active one-time Price validation, supplier landed-cost checks, server-approved
+  minimum gross-margin enforcement, payment signature verification, and Prodigi
+  order submission using stable idempotency keys.
+- [app/api/stripe/checkout/route.ts](app/api/stripe/checkout/route.ts):
+  authenticated and fail-closed, requires saved approved album, matching signature,
+  verified household, supplier quote, real book and country shipping Stripe Price IDs.
+- [app/api/stripe/webhook/route.ts](app/api/stripe/webhook/route.ts):
+  verified paid-session webhook updates order before any print submission.
+- [app/api/prodigi/webhook/route.ts](app/api/prodigi/webhook/route.ts):
+  authenticated Prodigi callbacks; retrieves canonical supplier order and
+  verifies merchant reference before saving shipping status.
+- [app/api/print/orders/route.ts](app/api/print/orders/route.ts),
+  [components/v2/book-orders.tsx](components/v2/book-orders.tsx):
+  per-user order history, tracking and administrator repair/retry operations.
+- [docs/WEB_ALBUM_RULES.md](docs/WEB_ALBUM_RULES.md),
+  [docs/WEB_COMMERCE_RULES.md](docs/WEB_COMMERCE_RULES.md):
+  un-deployed proposed Firestore/Storage rules for private proofs and immutable orders.
 
-## Values to configure
+## Server configuration — leave payment switches off until everything passes
 
-| Variable | Current value | Required action |
-|---|---|---|
-| `STRIPE_SECRET_KEY` | empty | Use a test key first; live key only after end-to-end testing. Add as a protected Vercel server environment variable, never in Git, browser or screenshots. |
-| `STRIPE_BOOK_PRICE_ID` | empty | Create a real active **one-time** Stripe Price `price_...` for the approved physical photo-book size/type and currency. Do not make up amounts without Prodigi production and shipping landed costs. |
-| `STRIPE_SHIPPING_PRICE_IDS_JSON` | `{}` | Configure country-to-one-time-shipping-Price mapping, e.g. `{"US":"price_REAL_ID"}`. Each amount must cover the approved service/country. Book and shipping Price must have the same currency and Stripe environment. |
-| `STRIPE_CHECKOUT_ORIGIN` | `https://www.boodoo.app` | Confirm the exact HTTPS origin on which the server and family studio are deployed. |
-| `STRIPE_WEBHOOK_SECRET` | empty | Register `https://www.boodoo.app/api/stripe/webhook` in the **matching Stripe environment** and store its `whsec_...` secret. Subscribe to `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired`. |
-| `FIREBASE_SERVICE_ACCOUNT_JSON` | empty | Store a dedicated minimal-privilege JSON service account for the existing Firestore project. Its `project_id` must equal `NEXT_PUBLIC_FIREBASE_PROJECT_ID`. Do not commit. |
-| `PRINT_ADMIN_UIDS` | empty | Comma-separated trusted Firebase UIDs who may approve print files and retry failed orders. |
-| `PRODIGI_API_KEY` | empty | Prodigi Sandbox key first, Live key only for approved production. |
-| `PRODIGI_BOOK_SKU` | empty | Real validated Prodigi photo-book SKU matched to trim size, cover, binding and printed page-count rules. |
-| `PRODIGI_ENVIRONMENT` | `sandbox` | Remain in Sandbox until samples, quotes and assets pass. |
-| `PRINT_ASSET_HOSTS` | empty | Comma-separated exact approved HTTPS hosts where Prodigi can GET production-ready PDF files without cookies, e.g. a signed Google Cloud Storage object endpoint. Do not use demo/photos or personal HTML. Ensure link expiry survives print ingestion. |
-| `BOOK_MANIFEST_SIGNING_SECRET` | empty | Generate 32+ random secret characters for HMAC-signed administrator approvals. Required for safe checkout and fulfillment. |
-| `PRODIGI_CALLBACK_URL` | `https://www.boodoo.app/api/prodigi/webhook` | Confirm the deployed HTTPS path. |
-| `PRODIGI_CALLBACK_SECRET` | empty | Generate at least 24 random characters and protect like a key. The adapter appends it to the per-order callback URL because Prodigi does not supply Stripe-style signed callbacks. Avoid exposing request URLs in logs. |
-| `NEXT_PUBLIC_WEB_ALBUMS_ENABLED` | `false` | Deploy and test account-isolated Firestore/Storage rules, then enable real saved albums. No demo albums may purchase. |
-| `NEXT_PUBLIC_BOOK_SHIPPING_COUNTRIES` | `US` | Comma-separated enabled countries, matching configured shipping prices. Only enable each after a verified destination and supplier quote. |
-| `NEXT_PUBLIC_BOOK_CHECKOUT_ENABLED` | `false` | Only expose the order control after end-to-end staging passes. |
-| `STRIPE_CHECKOUT_ENABLED` | `false` | Server-side master flag. Leave false until the final readiness check. |
-| `PRINT_FULFILLMENT_ENABLED` | `false` | Enables actual Prodigi order submission after verified payment. No standalone Prodigi orders are created during quotes. |
-| `BOOK_COMMERCE_LIVE_ENABLED` | `false` | Separate explicit authorization for **live** Stripe payments with **live** Prodigi fulfillment. |
+Copy the variable names from [.env.example](.env.example) into protected Vercel
+environment variables. Do not put private credentials in GitHub, chat, client
+source or `NEXT_PUBLIC_` variables.
 
-**Checkout Studio settings applied:** `ui_mode=hosted_page`, `mode=payment` (physical goods, not subscription), `billing_address_collection=auto`, `phone_number_collection.enabled=false`, `automatic_tax.enabled=false`, `allow_promotion_codes=false`, `submit_type=auto`, `integration_identifier=hosted_mobile_app_0001`, `origin_context=mobile_app`. `payment_method_collection` is intentionally omitted for one-time payment mode. Redirects target the existing authenticated `/family?view=albums` page with a *pending-verification* message, not a paid-order assertion.
+| Variable | Requirement |
+| --- | --- |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | Dedicated service-account JSON with minimum Firestore and Cloud Storage object-reader permissions. |
+| `NEXT_PUBLIC_WEB_ALBUMS_ENABLED` | `true` only **after** deploying and testing additive Firebase rules. |
+| `PRINT_PROOF_BUCKET` | Private Firebase/GCS bucket for immutable PDF proof objects; defaults to public Firebase bucket configuration. |
+| `PRINT_ASSET_HOSTS` | Include only `storage.googleapis.com` for the supported proof signed URLs. |
+| `BOOK_MANIFEST_SIGNING_SECRET` | Random server-only secret, minimum 32 characters. |
+| `PRINT_ADMIN_UIDS` | Comma-separated trusted Firebase UIDs for inspection, approval and order repair. |
+| `PRODIGI_API_KEY` | Sandbox API key first; Live key only after print sample sign-off. |
+| `PRODIGI_BOOK_SKU` | Actual verified 210mm square hardcover SKU with confirmed `default` and spine requirements. |
+| `PRODIGI_ENVIRONMENT` | `sandbox` for tests, `production` only for paid live books. |
+| `STRIPE_SECRET_KEY` | Test key for staging, matching live key for production. |
+| `STRIPE_BOOK_PRICE_ID` | Active one-time Stripe Price ID. It must match chosen format and valid page band. |
+| `STRIPE_SHIPPING_PRICE_IDS_JSON` | Country → active one-time shipping Price ID map, e.g. `{"US":"price_YOUR_REAL_ID"}`. |
+| `BOOK_MIN_GROSS_MARGIN_PERCENT` | Merchant-approved percentage **0 to below 80**. Both Stripe prices must cover the live Prodigi supplier quote and this margin. Tax, Stripe fees, refunds and overhead are not included. |
+| `STRIPE_CHECKOUT_ORIGIN` | Confirm actual HTTPS deployment origin. |
+| `STRIPE_WEBHOOK_SECRET` | Registered Stripe webhook signature secret for the correct environment. |
+| `PRODIGI_CALLBACK_URL` | `https://www.boodoo.app/api/prodigi/webhook` if that is the production origin. |
+| `PRODIGI_CALLBACK_SECRET` | 24+ random characters, kept private, used as the callback token. |
+| `NEXT_PUBLIC_BOOK_SHIPPING_COUNTRIES` | Country codes supported by verified supplier quote and Stripe shipping prices. |
+| `NEXT_PUBLIC_BOOK_CHECKOUT_ENABLED` | `false` until ready to display order button. |
+| `STRIPE_CHECKOUT_ENABLED` | `false` until end-to-end tests and approved retail amounts. |
+| `PRINT_FULFILLMENT_ENABLED` | `false` until final supplier artwork and Sandbox fulfillment are verified. |
+| `BOOK_COMMERCE_LIVE_ENABLED` | `false` until explicit approval for real charges AND real Prodigi production. |
 
-**Important tax warning:** automatic Stripe Tax is OFF because that was selected in Checkout Studio. Configure and review VAT/sales tax obligations before accepting payments internationally. Shipping is a separate pre-priced Stripe line item; country-specific rates must be approved, not inferred from a supplier production-cost quote.
+**Checkout Studio parameters kept:** `ui_mode=hosted_page`, `mode=payment`,
+`billing_address_collection=auto`, `phone_number_collection.enabled=false`,
+`automatic_tax.enabled=false`, `allow_promotion_codes=false`,
+`submit_type=auto`, `integration_identifier=hosted_mobile_app_0001`,
+`origin_context=mobile_app`. Do not add `payment_method_collection` in
+one-time payment mode.
 
-## What actually happens
+## Admin review workflow
 
-1. Authenticated user creates and **saves** a real album draft under `users/{uid}/webAlbums/{albumId}`. Client changes after approval invalidate that approval by `updatedAt`.
-2. Staff render and quality-check a **real press-ready, full-resolution PDF**, with physical size, bleed, safe areas and validated page count for the chosen SKU. Website's HTML preview cannot be used for this. Store the PDFs at privately managed, short-lived-signed or otherwise access-controlled HTTPS URLs that Prodigi can download. Maintain least-privilege download access.
-3. Admin approves and cryptographically signs the exact PDF references using `POST /api/print/approve` with their Firebase Bearer token. Body: `{"ownerUid":"UID","albumId":"UUID","sku":"REAL_PRODIGI_SKU","pageCount":24,"assets":[{"printArea":"default","url":"https://trusted-host/.../print.pdf","pageCount":24}]}`. Actual supported `printArea` values must match the chosen Prodigi SKU. This action is for a human-reviewed print file, not automatic proof of PDF validity.
-4. After all flags/secrets/prices are ready, the studio allows the parent to pick a shipping country and order. The server verifies album, family membership, immutable manifest, product + shipping prices and a successful supplier quote. Checkout limits the Stripe-collected shipping address to that country.
-5. Stripe Checkout collects payment on the hosted Stripe page. A signed webhook confirms payment and exact amount/currency/order/session. An authenticated persistent order is updated. A browser success redirect does **not** trigger printing.
-6. Verified paid order is submitted to Prodigi with a permanent `idempotencyKey` and owner:order merchant reference. The supplier may produce/ship immediately in Live. Server records the supplier ID and handles retries safely.
-7. Prodigi stage-change callback authenticates via configured secret, then server refetches the supplier order and updates status/tracking. Customer views it in **Family → Albums → Your printed book orders**. Administrator can run `POST /api/print/orders` with `{"uid":"UID","orderId":"UUID","action":"retry-fulfillment"}` or `"refresh-status"`.
+1. Parent signs in, saves a cloud album, and chooses **Generate print PDF**. This
+   downloads a review PDF and (once Firebase Storage rules are deployed) uploads
+   it privately to `users/{uid}/webAlbumProofs/{albumId}/{proofId}.pdf`.
+2. Inspector obtains a short-lived download link from
+   `POST /api/print/proof-inspect` with an administrator Firebase Bearer token
+   and body `{"ownerUid":"UID","albumId":"ALBUM_ID","storagePath":"users/UID/webAlbumProofs/ALBUM_ID/PROOF_ID.pdf"}`.
+3. Inspector checks actual PDF dimensions, total file page count vs the Prodigi
+   `pageCount` specification, image resolution, contrast and typography,
+   spine, country-dependent product variant and missing content. The current PDF
+   proof uses RGB raster pages and **does not declare PDF/X-4 certification**.
+   Ask Prodigi to accept/qualify this artwork before production.
+4. After confirming the supplier test, administrator calls
+   `POST /api/print/approve` with the same authenticated owner/album/proof,
+   plus `{"sku":"VERIFIED_SKU","pageCount":26,"storagePath":"...pdf","printArea":"default","preflightConfirmed":true}`
+   (example count only: use the **actual verified** PDF count). The server binds
+   its HMAC signature to owner, child, album revision, PDF object generation,
+   page count, SKU and signed reference.
+5. Once real prices and delivery countries exist, server checks the **Standard**
+   shipping quote and configured gross margin, creates a Stripe-hosted session,
+   and stores the order. Webhook verifies payment before an idempotent Prodigi
+   submission. Prodigi callbacks update tracking.
 
-## Required before taking real money
+## Pricing workflow
 
-- [ ] **Set retail prices:** inspect real Prodigi SKU quote by format/page count and destination; approve currency, production + shipping charges, margin, VAT/sales tax and refunds. Create book and shipping one-time Prices in Stripe; configure the real IDs. Current implementation uses one fixed SKU and one book Price; additional sizes/page bands require approved per-variant pricing and selection logic before marketing multiple versions.
-- [ ] **Complete real PDF export:** render book pages and cover/spine/bleed in the specific Prodigi product format. Test file resolution, cover, pagination, PDF accessibility and exact print areas with Prodigi Sandbox and physical samples. The current web HTML exporter is for personal preview only.
-- [ ] **Production persistence:** configure server service account, manifest signing secret, and protected Firestore write rules; deploy/test webAlbum and asset rules described in [docs/WEB_ALBUM_RULES.md](docs/WEB_ALBUM_RULES.md). No direct customer read/write access to `bookOrders` or `printManifests`; test overlapping rules against [docs/WEB_COMMERCE_RULES.md](docs/WEB_COMMERCE_RULES.md). Test album revisions after approvals, denied household memberships, retries and every failed state.
-- [ ] **Currency and country support:** choose shipping country rates, tax treatment, fulfillment shippingMethod and valid SKU globally. Verify with supplier before adding destinations to `NEXT_PUBLIC_BOOK_SHIPPING_COUNTRIES`.
-- [ ] **Webhooks:** register correct test/live Stripe webhook secrets and HTTPS Prodigi callback; verify signatures, replay behavior, async payments, failed/cancelled payments and duplicate callbacks. Test status retries after network failures and Prodigi `alreadyExists` responses. Review paid but failed fulfillment orders manually; refund through Stripe if they cannot be fulfilled.
-- [ ] **Security and privacy:** test consent, customer privacy notice for transfer of customer print data to Prodigi, access boundaries, log redaction, deletion policies, sensitive family photos, invoice and support workflows.
-- [ ] **Run tests/build:** use Node 22+ and `pnpm install --frozen-lockfile`, `pnpm test`, `pnpm build`, and then perform actual Checkout and Prodigi Sandbox order end-to-end. No successful deployment or paid-order test has been performed by this implementation.
-- [ ] **Only after tests:** turn on server feature flags and optionally the UI flag. For live charges, require `BOOK_COMMERCE_LIVE_ENABLED=true`, live Stripe key, Prodigi environment production, real approved print manifests and verified fulfillment.
+The administrative `POST /api/print/pricing-preview` accepts
+`{"countryCode":"US","pageCount":26}` with a Firebase admin Bearer token.
+It requests a **real** Prodigi Standard quote (production + shipping in USD).
+With `BOOK_MIN_GROSS_MARGIN_PERCENT` configured, it returns a minimum
+suggested retail total and split between book and shipping, **before tax,
+Stripe fees or refund reserve**. Review and approve actual consumer prices,
+then create two active **one-time** Stripe Prices per supported country in the
+matching Stripe environment. Never assume the suggestion itself is a final
+customer selling price.
 
-## Failure and recovery notes
+## Blocking steps before taking real money
 
-- Missing configuration, an unsigned/forged manifest, or an unapproved/changed album **fails closed** before checkout, preventing money collection.
-- A verified payment with a temporarily failed supplier request stays recorded as `fulfillment_error`; an administrator can investigate/retry. Prodigi deduplicates the same permanent `idempotencyKey`. A stuck `submitting` order becomes retryable after 10 minutes.
-- Merchant reference always associates the Prodigi order with the internal customer and order. Supplier callbacks are not trusted for their claimed shipping status until confirmed by direct Prodigi lookup.
-- No actual payment, Stripe Price creation, Prodigi Live order, print-ready PDF generation or production activation has been performed.
+- [ ] Confirm the exact Prodigi SKU(s), binding/page count rules, **spine
+  artwork requirement**, final print area dimensions, PDF/X-4 acceptance and
+  physical print sample. Current PDF is a *proof*, not a qualified press file.
+- [ ] Set up server credentials and Firebase proof upload rules; verify genuine
+  household authentication and private photo CORS in a real account.
+- [ ] Query actual supplier prices for relevant page counts and destinations.
+  Approve format, retail pricing, country shipping fees, margin, tax and refunds,
+  then create Stripe book + shipping prices. No live Stripe prices were present.
+- [ ] Configure and test webhook subscriptions, signature verification, duplicate
+  events, payment failures, customer cancellations, supplier error states,
+  refunds, and actual shipping status.
+- [ ] Run Node 22+ `pnpm install --frozen-lockfile`, `pnpm test`, `pnpm build`
+  and a **real Stripe test-mode → Prodigi Sandbox** journey, followed by
+  physical sample verification. Vercel deploy successes are not proof of commerce success.
+- [ ] Review customers' privacy notice for sending family photos and recipient
+  shipping details to Prodigi and set retention and deletion rules.
+- [ ] Only after validation, explicitly turn on all necessary flags in staging,
+  then separately authorize production. Do **not** enable Stripe Checkout
+  without working signed approval and production fulfillment.
 
-## Official references
+## Official requirements
 
+- https://support.prodigi.com/hc/en-us/articles/17150417510940-Hardcover-photo-books-File-set-up-guidelines
+- https://www.prodigi.com/blog/photo-books-technical-guide/
+- https://www.prodigi.com/print-api/docs/reference/
+- https://docs.cloud.google.com/storage/docs/access-control/signing-urls-manually
 - https://docs.stripe.com/payments/checkout
 - https://docs.stripe.com/webhooks
 - https://docs.stripe.com/tax
-- https://www.prodigi.com/print-api/docs/reference/
-- https://support.stripe.com
