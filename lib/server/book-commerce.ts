@@ -251,8 +251,10 @@ export async function refreshProdigi(order: BookOrder): Promise<BookOrder> {
 export async function runFulfillment(uid: string, id: string): Promise<void> {
   const path = orderPath(uid, id);
   const stored = await readRecord<BookOrder>(path);
-  if (!stored || !['paid', 'fulfillment_error'].includes(stored.data.status) ||
-      !['not_started', 'error'].includes(stored.data.fulfillmentState)) return;
+  if (!stored || !['paid', 'fulfillment_error'].includes(stored.data.status)) return;
+  const staleSubmission = stored.data.fulfillmentState === 'submitting' &&
+    Date.now() - Date.parse(stored.data.updatedAt) > 10 * 60 * 1000;
+  if (!['not_started', 'error'].includes(stored.data.fulfillmentState) && !staleSubmission) return;
   const submitting: BookOrder = {
     ...stored.data, status: 'paid', fulfillmentState: 'submitting', updatedAt: new Date().toISOString(),
   };
