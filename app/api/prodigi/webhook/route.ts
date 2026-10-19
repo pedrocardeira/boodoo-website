@@ -15,12 +15,13 @@ export async function POST(request: Request) {
   // Fetch the canonical order from Prodigi using our server key, then validate
   // merchantReference, account and persistent order ID before accepting a status.
   try {
-    const event = await request.json() as { subject?: string; id?: string; type?: string };
+    const event = await request.json() as { subject?: string; id?: string; type?: string; data?: { order?: { id?: string } } };
+    const prodigiId = event.data?.order?.id || event.subject;
     if (!event.id?.startsWith('evt_') || !event.type?.startsWith('com.prodigi.') ||
-        !event.subject?.startsWith('ord_')) {
+        !prodigiId?.startsWith('ord_')) {
       return NextResponse.json({ error: 'Invalid supplier event.' }, { status: 400 });
     }
-    const details = await getProdigiDetails(event.subject);
+    const details = await getProdigiDetails(prodigiId);
     const parts = details.merchantReference?.split(':') || [];
     if (parts.length !== 2 || parts.some(x => !/^[a-zA-Z0-9_-]+$/.test(x))) {
       return NextResponse.json({ error: 'Unrecognized supplier order.' }, { status: 409 });
