@@ -104,7 +104,7 @@ export async function replaceRecord(path: string, data: unknown, updateTime: str
 export async function listRecords<T>(path: string): Promise<T[]> {
   // This is a subcollection path, not a document. Derive the safe URL from parent document.
   const segments = path.split('/');
-  if (segments.length % 2 !== 0 || segments.length < 2) throw new Error('Invalid collection path.');
+  if (segments.length % 2 !== 1 || segments.length < 3) throw new Error('Invalid collection path.');
   const collectionName = segments.pop()!;
   const base = documentURL(segments.join('/'));
   const url = base + '/' + encodeURIComponent(collectionName) + '?pageSize=100';
@@ -141,9 +141,19 @@ export async function assertHouseholdMember(uid: string, childID: string): Promi
   if (!member || !baby) throw new Error('Family or child access denied.');
 }
 
-async function getRawDocument(path: string): Promise<{ fields?: Record<string, { stringValue?: string }> } | null> {
+export async function getRawDocument(path: string): Promise<{ fields?: Record<string, { stringValue?: string }> } | null> {
   const response = await requestDB(path);
   if (response.status === 404) return null;
   if (!response.ok) throw new Error('Could not validate family authorization.');
   return response.json();
+}
+
+export async function getAlbumSummary(uid: string, id: string): Promise<{ id: string; childID: string; updatedAt: string; title: string } | null> {
+  const doc = await getRawDocument('users/' + uid + '/webAlbums/' + id);
+  if (!doc) return null;
+  const data = doc.fields || {};
+  const childID = data.childID?.stringValue;
+  const updatedAt = data.updatedAt?.stringValue;
+  if (data.id?.stringValue !== id || !childID || !updatedAt) throw new Error('Invalid album document.');
+  return { id, childID, updatedAt, title: data.title?.stringValue || '' };
 }
