@@ -46,6 +46,7 @@ async function stripeFetch(path: string, init?: RequestInit): Promise<Response> 
     headers: {
       Authorization: 'Bearer ' + stripeKey(),
       ...(init?.body ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}),
+      ...(init?.headers || {}),
     }, cache: 'no-store', signal: AbortSignal.timeout(15000),
   });
 }
@@ -228,10 +229,10 @@ export async function refreshProdigi(order: BookOrder): Promise<BookOrder> {
 export async function runFulfillment(uid: string, id: string): Promise<void> {
   const path = orderPath(uid, id);
   const stored = await readRecord<BookOrder>(path);
-  if (!stored || stored.data.status !== 'paid' ||
+  if (!stored || !['paid', 'fulfillment_error'].includes(stored.data.status) ||
       !['not_started', 'error'].includes(stored.data.fulfillmentState)) return;
   const submitting: BookOrder = {
-    ...stored.data, fulfillmentState: 'submitting', updatedAt: new Date().toISOString(),
+    ...stored.data, status: 'paid', fulfillmentState: 'submitting', updatedAt: new Date().toISOString(),
   };
   await replaceRecord(path, submitting, stored.updateTime);
   try {
