@@ -76,10 +76,8 @@ async function photo(moment: Moment | undefined): Promise<HTMLImageElement | nul
   image.crossOrigin = 'anonymous';
   image.decoding = 'sync';
   image.src = moment.image;
-  await new Promise<void>((resolve, reject) => {
-    image.onload = () => resolve();
-    image.onerror = () => reject(new Error('A full-resolution photo could not be loaded. Check image access/CORS.'));
-  });
+  try { await image.decode(); }
+  catch { throw new Error('A full-resolution photo could not be loaded. Check image access/CORS.'); }
   return image;
 }
 function photoDraw(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: number, y: number,
@@ -165,7 +163,7 @@ function drawPage(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, albu
     if (page.kind === 'cover') {
       ctx.font = 'bold ' + (10 * px) + 'px system-ui, Arial, sans-serif';
       const heading = wrap(ctx, album.title, W - 2 * safe);
-      if (heading.length > 3) throw new Error('The cover title is too long.');
+      if (heading.length > 2) throw new Error('The cover title is too long.');
       textLines(ctx, heading, safe, baseY, 13 * px, H - safe - 12 * px);
       ctx.font = (3.2 * px) + 'px system-ui, Arial, sans-serif';
       ctx.fillText(album.period || '', safe, H - safe - 4 * px);
