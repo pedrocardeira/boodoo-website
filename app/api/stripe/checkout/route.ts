@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { assertHouseholdMember, createRecord, getAlbumSummary, readRecord, replaceRecord, verifiedUser } from '@/lib/server/commerce-store';
-import { type BookManifest, type BookOrder, checkedPrice, checkoutEnabled, createStripeSession, manifestPath, orderPath, shippingPriceId, verifyApprovedManifest, verifySupplierQuote } from '@/lib/server/book-commerce';
+import { type BookManifest, type BookOrder, checkedPrice, checkoutEnabled, createStripeSession, manifestPath, minimumRetailTotal, orderPath, shippingPriceId, verifyApprovedManifest, verifySupplierQuote } from '@/lib/server/book-commerce';
 
 export const runtime = 'nodejs';
 
@@ -54,7 +54,16 @@ export async function POST(request: Request) {
     if (bookPrice.currency !== shippingPrice.currency || bookPrice.livemode !== shippingPrice.livemode) {
       return bad('Book and shipping prices must use the same currency and environment.', 503);
     }
-    await verifySupplierQuote(manifest, country);
+    const supplier = await verifySupplierQuote(manifest, country);
+    const margin = Number(process.env.BOOK_MIN_GROSS_MARGIN_PERCENT);
+    if (!process.env.BOOK_MIN_GROSS_MARGIN_PERCENT || !Number.isFinite(margin)) {
+      return bad('Retail margin approval is not configured.', 503);
+    }
+    if (bookPrice.currency !== supplier.currency ||
+        bookPrice.unit_amount + shippingPrice.unit_amount <
+          minimumRetailTotal(supplier.supplierTotalCents, margin)) {
+      return bad('Retail prices do not cover approved production, delivery, and margin.', 503);
+    }
 
     const id = randomUUID();
     const now = new Date().toISOString();
