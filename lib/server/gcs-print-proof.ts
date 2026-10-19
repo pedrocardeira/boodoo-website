@@ -76,7 +76,7 @@ export function signedProofUrl(path: string, generation: string, expiresSeconds 
     'X-Goog-SignedHeaders': 'host',
     generation,
   };
-  const queryString = Object.entries(query).sort(([a],[b]) => a.localeCompare(b))
+  const queryString = Object.entries(query).sort(([a],[b]) => a < b ? -1 : a > b ? 1 : 0)
     .map(([key, value]) => encode(key) + '=' + encode(value)).join('&');
   const resource = '/' + encode(bucket()) + '/' + path.split('/').map(encode).join('/');
   const request = ['GET', resource, queryString, 'host:storage.googleapis.com\n', 'host', 'UNSIGNED-PAYLOAD'].join('\n');
