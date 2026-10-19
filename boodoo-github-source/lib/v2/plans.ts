@@ -18,7 +18,7 @@ export const freeFeatures = [
 
 export const proFeatures = [
   'Full care history beyond today',
-  'Reports and averages to understand recorded routines',
+  'Insights, patterns, predictions, reports and averages',
   'Custom feeding intervals and feed and sleep notifications',
   'Share with multiple caregivers through the family owner’s registered Pro account',
   'Custom colors and themes for your family’s space',
