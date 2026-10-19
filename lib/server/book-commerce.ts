@@ -208,7 +208,7 @@ export async function applyPaidSession(order: BookOrder, session: Record<string,
 export async function submitProdigi(order: BookOrder): Promise<{ id: string; stage: string }> {
   if (process.env.PRINT_FULFILLMENT_ENABLED !== 'true') throw new Error('Production fulfillment is not enabled.');
   if (!order.recipient) throw new Error('No verified Stripe delivery address.');
-  validateManifest(order.manifest);
+  verifyApprovedManifest(order.uid, order.manifest);
   if (process.env.PRODIGI_ENVIRONMENT === 'production' &&
       (process.env.BOOK_COMMERCE_LIVE_ENABLED !== 'true' || !stripeKey().startsWith('sk_live_'))) {
     throw new Error('Live Prodigi requires separately enabled live commerce.');
