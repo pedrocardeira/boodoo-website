@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsc lib/v2/model.ts lib/v2/print-provider.ts --outDir tests/compiled --module commonjs --target es2022 --skipLibCheck && node --test tests/model.test.cjs"
+    "test": "tsc lib/v2/model.ts lib/v2/draft-storage.ts lib/v2/book-composition.ts lib/v2/print-provider.ts lib/v2/print-pdf.ts lib/v2/book-layout.ts --outDir tests/compiled --module commonjs --target es2022 --skipLibCheck && node --test tests/*.test.cjs"
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",
@@ -25,6 +25,7 @@
     "@types/react-dom": "^19.0.2",
     "eslint": "^9.17.0",
     "eslint-config-next": "15.1.4",
+    "fake-indexeddb": "^6.2.5",
     "postcss": "^8.4.49",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.2"

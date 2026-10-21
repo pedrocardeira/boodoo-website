@@ -12,12 +12,14 @@ export type Moment = {
   notes: string;
   date: string;
   image?: string;
+  hasPhotoReference?: boolean;
   width?: number;
   height?: number;
   // Presentation-only, shared with iOS. Never modify source photo bytes.
   photoFraming?: MomentFraming;
 };
-export type Album = { id: string; title: string; childID: string; style: string; period: string; updatedAt: string; moments: Moment[] };
+import type { Composition } from "./book-composition";
+export type Album = { composition?: Composition; id: string; title: string; childID: string; style: string; period: string; updatedAt: string; moments: Moment[] };
 export const bookStyles = ['Boodoo Classic', 'Soft Childhood', 'Minimal', 'Color Story'];
 export const periods = ['Our First Month', 'Three Months Together', 'Six Months Together', 'My First Year', 'My Second Year', 'My Third Year', 'My Fourth Year', 'My Fifth Year', 'Annual Book', 'Custom Book'];
 export const collectionNames = ['feeds', 'sleep', 'nursing', 'diapers', 'stools', 'growth', 'milestones', 'careEntries'] as const;
@@ -39,7 +41,7 @@ export function albumIssues(album:Album):string[]{
 export function addMonthsClamped(date:Date,months:number){const d=new Date(date);const day=d.getDate();d.setDate(1);d.setMonth(d.getMonth()+months);const last=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();d.setDate(Math.min(day,last));return d;}
 export function selectPeriod(moments:Moment[],period:string,birthDateTimestamp:number,now=new Date(),customStart?:string,customEnd?:string){
  let start=new Date(birthDateTimestamp*1000);let end=new Date(start);const index=periods.indexOf(period);
- if(index===9){start=customStart?new Date(customStart+'T00:00:00'):new Date(0);end=customEnd?new Date(customEnd+'T23:59:59.999'):now;}
+ if(index===9){start=customStart?new Date(customStart+'T00:00:00'):new Date(0);end=customEnd?new Date(+new Date(customEnd+'T00:00:00')+86400000):now;}
  else if(index<=3&&index>=0){end=addMonthsClamped(end,[1,3,6,12][index]);}
  else {const age=Math.max(0,now.getFullYear()-start.getFullYear()-(now.getMonth()<start.getMonth()||(now.getMonth()===start.getMonth()&&now.getDate()<start.getDate())?1:0));const offset=index===8?age:index-3;start.setFullYear(start.getFullYear()+offset);end=new Date(start);end.setFullYear(end.getFullYear()+1);}
  return moments.filter(m=>Date.parse(m.date)>=+start&&Date.parse(m.date)<Math.min(+end,+now+1)).sort((a,b)=>Date.parse(a.date)-Date.parse(b.date));
@@ -59,12 +61,10 @@ export function ageCompletedBookPeriods(birthDateTimestamp:number,now=new Date()
 export function readyBookPeriods(child:Child,moments:Moment[],now=new Date()):string[] {
  return ageCompletedBookPeriods(child.birthDateTimestamp,now).filter(period=>
    selectPeriod(moments,period,child.birthDateTimestamp,now)
-     .filter(m=>m.title.trim()||m.notes.trim()||m.image).length>=3
+     .filter(m=>m.title.trim()||m.notes.trim()||m.image||m.hasPhotoReference).length>=3
  );
 }
-export function newAlbum(child:Child,moments:Moment[],period?:string):Album {
- const chosen=period??readyBookPeriods(child,moments).at(-1)
-   ??ageCompletedBookPeriods(child.birthDateTimestamp).at(-1)
-   ??periods[0];
- return{id:crypto.randomUUID(),title:`${child.babyName}’s ${chosen.replace(/^(My|Our) /, "").toLowerCase()}`,childID:child.id,style:bookStyles[0],period:chosen,updatedAt:new Date().toISOString(),moments:selectPeriod(moments,chosen,child.birthDateTimestamp)};
+export function newAlbum(child:Child,moments:Moment[],period?:string,now=new Date()):Album {
+ const chosen=period??readyBookPeriods(child,moments,now).at(-1)??'Custom Book';
+ return{id:crypto.randomUUID(),title:`${child.babyName}’s ${chosen.replace(/^(My|Our) /, "").toLowerCase()}`,childID:child.id,style:bookStyles[0],period:chosen,updatedAt:now.toISOString(),moments:selectPeriod(moments,chosen,child.birthDateTimestamp,now)};
 }

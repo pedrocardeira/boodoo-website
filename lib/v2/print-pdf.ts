@@ -8,6 +8,8 @@
  * must inspect artwork and Prodigi SKU/print-area requirements before signing.
  */
 import type { Album, Moment } from './model';
+import { isSpread, validateBackup } from './book-composition';
+import { pageGeometry, pageTexts } from './book-layout';
 
 const DPI = 300;
 const MM_TO_IN = 1 / 25.4;
@@ -17,7 +19,8 @@ export const SQUARE_HARDCOVER: PrintFormat = { widthMm: 210, heightMm: 210, minP
 export type PrintProof = { blob: Blob; pageCount: number; widthMm: number; heightMm: number; warnings: string[] };
 
 type PlannedPage =
-  | { kind: 'cover'|'back'; moment: Moment | undefined }
+  | { kind: 'cover'; moment: Moment | undefined }
+  | { kind: 'back'; moment: Moment | undefined }
   | { kind: 'story'; moment: Moment; part: string; first: boolean }
   | { kind: 'chapter' };
 
@@ -86,7 +89,7 @@ function photoDraw(ctx: CanvasRenderingContext2D, img: HTMLImageElement, x: numb
   // No artificial blur, photo repetition, or incorrect stretching.
   const framing = moment.photoFraming;
   const mode = framing?.layout === 'entirePhoto' ? 'contain' : 'cover';
-  const zoom = Math.max(1, Math.min(3, framing?.zoom || 1));
+  const zoom = Math.max(1, Math.min(4, framing?.zoom || 1));
   const base = mode === 'contain' ? Math.min(width / sw, height / sh) : Math.max(width / sw, height / sh);
   const scale = base * zoom;
   // Reject blurry effective resolution instead of silently upscaling photographs.
@@ -263,6 +266,8 @@ export async function createPrintProof(
   album: Album, format: PrintFormat = SQUARE_HARDCOVER,
   progress?: (current: number, total: number) => void
 ): Promise<PrintProof> {
+  assertFormat(format);
+  if(album.composition)return compositionProof(album,format,progress);
   const pages = planPrintPages(album, format);
   const {canvas, ctx} = canvasFor(format);
   const frames: Uint8Array[] = [];
@@ -280,4 +285,52 @@ export async function createPrintProof(
     pageCount: frames.length, widthMm: format.widthMm, heightMm: format.heightMm,
     warnings: ['Proof requires manual SKU/page-count/colour/PDF/X-4 preflight and approval before live printing.'],
   };
+}
+
+async function compositionProof(album:Album,format:PrintFormat,progress?:(current:number,total:number)=>void):Promise<PrintProof> {
+ const c=album.composition!;
+ validateBackup(album,album.childID);
+ const total=2+c.pages.reduce((n,p)=>n+(isSpread(p)?2:1),0);
+ if(!c.pages.length||total<format.minPages||total>format.maxPages||total%2)throw new Error('The selected format needs an even page count from '+format.minPages+' to '+format.maxPages+'. Add meaningful pages; no blank filler is generated.');
+ const represented=new Set(c.pages.flatMap(p=>[...p.sourceIDs,...p.slots.map(s=>s.momentID)]));
+ if(album.moments.some(m=>!represented.has(m.id)))throw new Error('Some selected memories are not represented in the book.');
+ const {canvas,ctx}=canvasFor(format),W=canvas.width,H=canvas.height,px=W/format.widthMm;
+ const frames:Uint8Array[]=[];
+ const find=(id:string|undefined)=>album.moments.find(m=>m.id===id);
+ const logo=new Image();logo.src='/icons/boodoo-mark.png';await logo.decode();
+ async function cover(back:boolean){
+  const m=find(back?c.backMomentID:c.coverMomentID),img=await photo(m);
+  if(!m||!img)throw new Error('Choose an available photograph for both covers.');
+  photoDraw(ctx,img,0,0,W,H,{...m,photoFraming:back?c.backFraming:c.coverFraming},260);
+  const g=ctx.createLinearGradient(0,H*.55,0,H);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.75)');ctx.fillStyle=g;ctx.fillRect(0,H*.55,W,H*.45);
+  const margin=W*.08;ctx.fillStyle='#ffffff';ctx.textAlign='left';ctx.textBaseline='top';
+  if(logo)ctx.drawImage(logo,margin,H*.68,9*px,9*px);
+  ctx.font='bold '+4*px+'px system-ui';ctx.fillText('BooDoo',margin+12*px,H*.69);
+  if(!back){ctx.font=8*px+'px Georgia';const lines=wrap(ctx,album.title,W-2*margin);if(lines.length>2)throw new Error('Shorten the cover title to fit two lines.');textLines(ctx,lines,margin,H*.77,10*px,H*.9);ctx.font=3.5*px+'px system-ui';const ageLines=wrap(ctx,c.ageTitle,W-2*margin);textLines(ctx,ageLines,margin,H*.92,4.5*px,H*.98);}
+  frames.push(await jpg(canvas));progress?.(frames.length,total);
+ }
+ await cover(false);
+ for(const page of c.pages){
+  const texts=pageTexts(page,c,album.moments),geometry=pageGeometry(page,!!texts.length),sides=isSpread(page)?2:1;
+  if(!page.slots.length&&!texts.length)throw new Error('Empty pages cannot be printed.');
+  const spread=document.createElement('canvas');spread.width=W*sides;spread.height=H;const paint=spread.getContext('2d',{alpha:false});if(!paint)throw new Error('PDF rendering unavailable.');
+  paint.fillStyle='#f4efe6';paint.fillRect(0,0,spread.width,H);
+  for(let i=0;i<page.slots.length;i++){
+   const slot=page.slots[i],r=geometry.photos[i],m=find(slot.momentID),img=await photo(m);
+   if(!r||!m||!img)throw new Error('A page photograph is missing.');
+   photoDraw(paint,img,r.x*spread.width,r.y*H,r.w*spread.width,r.h*H,{...m,photoFraming:slot.framing},260);
+  }
+  if(geometry.text){
+   const r=geometry.text,x=r.x*spread.width,y=r.y*H,w=r.w*spread.width,h=r.h*H,pad=6*px;
+   paint.fillStyle=geometry.overlay?'rgba(0,0,0,.78)':'#f4efe6';paint.fillRect(x,y,w,h);paint.fillStyle=geometry.overlay?'#ffffff':'#2c2925';paint.textAlign='left';paint.textBaseline='top';let cursor=y+pad;
+   for(const t of texts){
+    if(t.title){paint.font=4.2*px+'px Georgia';const lines=wrap(paint,t.title,w-2*pad);textLines(paint,lines,x+pad,cursor,5.5*px,y+h-pad);cursor+=lines.length*5.5*px+2*px;}
+    if(t.notes){paint.font=3.1*px+'px system-ui';const lines=wrap(paint,t.notes,w-2*pad);textLines(paint,lines,x+pad,cursor,4.5*px,y+h-pad);cursor+=lines.length*4.5*px+3*px;}
+   }
+  }
+  for(let side=0;side<sides;side++){ctx.drawImage(spread,side*W,0,W,H,0,0,W,H);frames.push(await jpg(canvas));progress?.(frames.length,total);}
+  spread.width=1;spread.height=1;
+ }
+ await cover(true);
+ return {blob:packageImages(frames,format,W,H),pageCount:frames.length,widthMm:format.widthMm,heightMm:format.heightMm,warnings:['Uncertified proof: product trim, bleed, binding gutter and spine require supplier review before approval.']};
 }

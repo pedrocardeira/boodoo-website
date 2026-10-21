@@ -1,0 +1,24 @@
+name: Website checks
+on:
+  pull_request:
+  push:
+    branches: [main, codex/boodoo-v2]
+permissions:
+  contents: read
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --global pnpm@11.25.0
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+      - run: pnpm build
+      - name: Check mirrored editor sources
+        run: |
+          for file in lib/v2/book-layout.ts lib/v2/print-pdf.ts components/v2/book-production.tsx components/v2/album-studio.tsx components/v2/book-page.tsx components/v2/family-space.tsx lib/v2/book-composition.ts lib/v2/draft-storage.ts lib/v2/model.ts app/family.css app/pricing/page.tsx app/compare/page.tsx app/v2.css components/v2/plans.tsx components/v2/header.tsx components/v2/feature-guide.tsx components/v2/feeding-guide.tsx lib/v2/plans.ts; do
+            cmp "$file" "boodoo-github-source/$file"
+          done
