@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsc lib/v2/model.ts lib/v2/draft-storage.ts lib/v2/book-composition.ts lib/v2/print-provider.ts --outDir tests/compiled --module commonjs --target es2022 --skipLibCheck && node --test tests/*.test.cjs"
+    "test": "tsc lib/v2/model.ts lib/v2/draft-storage.ts lib/v2/book-composition.ts lib/v2/print-provider.ts lib/v2/print-pdf.ts lib/v2/book-layout.ts --outDir tests/compiled --module commonjs --target es2022 --skipLibCheck && node --test tests/*.test.cjs"
   },
   "dependencies": {
     "@vercel/analytics": "^1.5.0",

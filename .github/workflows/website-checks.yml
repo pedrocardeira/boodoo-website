@@ -19,6 +19,6 @@ jobs:
       - run: pnpm build
       - name: Check mirrored editor sources
         run: |
-          for file in components/v2/album-studio.tsx components/v2/book-page.tsx components/v2/family-space.tsx lib/v2/book-composition.ts lib/v2/draft-storage.ts lib/v2/model.ts app/family.css app/pricing/page.tsx app/compare/page.tsx app/v2.css components/v2/plans.tsx components/v2/header.tsx components/v2/feature-guide.tsx components/v2/feeding-guide.tsx lib/v2/plans.ts; do
+          for file in lib/v2/book-layout.ts lib/v2/print-pdf.ts components/v2/book-production.tsx components/v2/album-studio.tsx components/v2/book-page.tsx components/v2/family-space.tsx lib/v2/book-composition.ts lib/v2/draft-storage.ts lib/v2/model.ts app/family.css app/pricing/page.tsx app/compare/page.tsx app/v2.css components/v2/plans.tsx components/v2/header.tsx components/v2/feature-guide.tsx components/v2/feeding-guide.tsx lib/v2/plans.ts; do
             cmp "$file" "boodoo-github-source/$file"
           done

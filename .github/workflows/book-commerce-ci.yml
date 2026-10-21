@@ -1,0 +1,48 @@
+name: BooDoo Book Commerce CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/api/stripe/**'
+      - 'app/api/print/**'
+      - 'app/api/prodigi/**'
+      - 'lib/server/**'
+      - 'components/v2/book-orders.tsx'
+      - 'components/v2/album-studio.tsx'
+      - 'components/v2/family-space.tsx'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/book-commerce-ci.yml'
+  pull_request:
+    paths:
+      - 'app/api/stripe/**'
+      - 'app/api/print/**'
+      - 'app/api/prodigi/**'
+      - 'lib/server/**'
+      - 'components/v2/book-orders.tsx'
+      - 'components/v2/album-studio.tsx'
+      - 'components/v2/family-space.tsx'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/book-commerce-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  compile-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm exec tsc --noEmit
+      - run: pnpm test
+      - run: pnpm build

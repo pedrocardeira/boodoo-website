@@ -34,7 +34,7 @@ export function PlanCards() {
         <a className="v2-button" href={appStoreUrl}>Explore Pro in the app <ArrowUpRight size={18}/></a>
         <h3>Everything in Free, plus</h3>
         <ul className="plan-features">{proFeatures.map(feature => <li key={feature}><Check size={18}/><span>{feature}</span></li>)}</ul>
-        <Link href="#next-update" className="plan-next">See what’s coming to Pro <ArrowRight size={16}/></Link>
+        <Link href="#next-update" className="plan-next">Explore the Pro tools <ArrowRight size={16}/></Link>
       </article>
     </div>
     <p className="plan-terms">Prices shown in euros. Regional pricing and subscription terms are confirmed in the App Store before purchase. Subscriptions renew automatically unless cancelled in your Apple account.</p>
@@ -52,6 +52,6 @@ export function ProBenefit() {
   return <section className="v2-section pro-benefit" id="pricing">
     <div className="pro-heading"><div><span className="eyebrow">BOODOO PRO</span><h2>Make more of<br/><em>every day you log.</em></h2><p>More history to look back on. More context for the changes you notice. More control over the routine that works for your family.</p></div><div className="pro-price-note"><strong>{euro(proPrices.monthly)}<small>/ month</small></strong><span>or {euro(proPrices.yearly)} billed yearly</span><Link href="/pricing" className="v2-button">Compare Free & Pro <ArrowRight size={18}/></Link></div></div>
     <div className="pro-reasons">{reasons.map(reason => <article key={reason.title}><reason.icon size={25}/><h3>{reason.title}</h3><p>{reason.text}</p></article>)}</div>
-    <div className="next-update-teaser"><span className="release-label">NEXT APP UPDATE</span><p>Pro is getting editable sleep plans, reviews, period comparisons, appointment summaries, memory recaps and digital book exports.</p><Link href="/pricing#next-update">Explore the upcoming tools <ArrowRight size={17}/></Link></div>
+    <div className="next-update-teaser"><span className="release-label">IN THE IOS APP · PRO</span><p>Pro includes editable sleep plans, reviews, period comparisons, appointment summaries, memory recaps and digital book exports.</p><Link href="/pricing#next-update">Explore the Pro tools <ArrowRight size={17}/></Link></div>
   </section>;
 }

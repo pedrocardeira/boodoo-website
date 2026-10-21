@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { pageGeometry, pageTexts } from '@/lib/v2/book-layout';
 import type { Moment, MomentFraming } from '@/lib/v2/model';
 import { cropGeometry, isSpread, meaningfulTitle, type Composition, type Page, type Slot } from '@/lib/v2/book-composition';
 
@@ -18,10 +19,10 @@ export function PhotoSlot({moment,slot,active,onSelect,onChange}:{moment?:Moment
  </div>;
 }
 export function BookPage({page,composition,moments,activeSlot,onSelect,onCrop}:{page:Page;composition:Composition;moments:Moment[];activeSlot?:number;onSelect?:(i:number)=>void;onCrop?:(i:number,f:MomentFraming)=>void}){
- const texts=page.sourceIDs.map(id=>({id,...(composition.textEdits[id]??moments.find(m=>m.id===id)??{title:'',notes:''})})).filter(m=>meaningfulTitle(m.title)||m.notes);
+ const texts=pageTexts(page,composition,moments);const geometry=pageGeometry(page,texts.length>0);
  return <div className={'premium-page layout-'+page.layout+(isSpread(page)?' facing':'')+(texts.length?' has-text':'')+(!page.slots.length?' no-photo':'')}>
- <div className="premium-photo-grid">{page.slots.map((s,i)=><PhotoSlot key={s.id} slot={s} moment={moments.find(m=>m.id===s.momentID)} active={activeSlot===i} onSelect={onSelect?()=>onSelect(i):undefined} onChange={onCrop?f=>onCrop(i,f):undefined}/>)}</div>
- {texts.length>0&&<div className="premium-page-text">{texts.map(m=><div key={m.id}>{meaningfulTitle(m.title)&&<h3>{meaningfulTitle(m.title)}</h3>}{m.notes&&<p>{m.notes}</p>}</div>)}</div>}
+ <div className="premium-photo-grid" style={{inset:0,display:'block'}}>{page.slots.map((s,i)=>{const r=geometry.photos[i];return r&&<div key={s.id} style={{position:'absolute',left:r.x*100+'%',top:r.y*100+'%',width:r.w*100+'%',height:r.h*100+'%'}}><PhotoSlot slot={s} moment={moments.find(m=>m.id===s.momentID)} active={activeSlot===i} onSelect={onSelect?()=>onSelect(i):undefined} onChange={onCrop?f=>onCrop(i,f):undefined}/></div>;})}</div>
+ {texts.length>0&&<div className="premium-page-text" style={geometry.text?{left:geometry.text.x*100+'%',top:geometry.text.y*100+'%',width:geometry.text.w*100+'%',height:geometry.text.h*100+'%',maxHeight:'none',bottom:'auto',right:'auto'}:undefined}>{texts.map(m=><div key={m.id}>{meaningfulTitle(m.title)&&<h3>{meaningfulTitle(m.title)}</h3>}{m.notes&&<p>{m.notes}</p>}</div>)}</div>}
  {isSpread(page)&&<div className="premium-gutter" aria-label="Illustrative center gutter"/>}
  </div>;
 }

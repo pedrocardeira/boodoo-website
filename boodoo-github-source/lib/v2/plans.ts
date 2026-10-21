@@ -1,4 +1,4 @@
-// Keep the published storefront prices separate from unreleased app features.
+// Published storefront prices; StoreKit confirms regional pricing.
 // Source: Apple Spain storefront, checked 15 October 2026. StoreKit remains
 // authoritative for the customer's region and the purchase terms.
 export const appStoreUrl = 'https://apps.apple.com/app/id6784456363';
@@ -22,9 +22,11 @@ export const proFeatures = [
   'Custom feeding intervals and feed and sleep notifications',
   'Share with multiple caregivers through the family owner’s registered Pro account',
   'Custom colors and themes for your family’s space',
+  'Editable sleep plans, reviews and period comparisons',
+  'Appointment summaries and questions, memory recaps and digital book PDF export',
 ];
 
-export const nextUpdateFeatures = [
+export const proTools = [
   { title: 'Make a plan for their sleep.', description: 'Build an editable nap and bedtime plan from your chosen windows and recent sleep records. Adjust times, add routine notes and reopen saved plans.', label: 'Personal sleep planning' },
   { title: 'See what changed this week.', description: 'Create daily, weekly, monthly or custom reviews from your records. Compare periods and keep your own notes.', label: 'Reviews & comparisons' },
   { title: 'Arrive with the details ready.', description: 'Prepare a summary and editable questions for the next appointment. Share the summary as text or PDF.', label: 'Appointment preparation' },

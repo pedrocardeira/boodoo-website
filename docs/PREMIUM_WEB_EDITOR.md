@@ -14,7 +14,9 @@ Owner-scoped IndexedDB stores browser drafts and uploaded originals, avoiding lo
 
 ## Printing
 
-Existing authenticated Prodigi sandbox quote is unchanged. No order/payment endpoint is added. Checkout remains disabled until verified SKU-specific dimensions, bleed, trim, gutter, spine, page-count limits and effective resolution validation plus a production renderer are implemented. The spine strip is a content preview with full name, age title and logo; it does not pretend to show validated physical spine dimensions. Center gutter is illustrative. Personal browser printing is not a certified print proof.
+The latest main-branch authenticated checkout, webhook, immutable private proof upload, staff approval and order tracking integration is preserved. The production PDF renderer now consumes the versioned composition: chosen cover/back photos, independent crops, captions, page layouts and facing-page spreads. It rejects missing sources, insufficient image resolution, text overflow and invalid physical page counts rather than silently omitting content or adding filler. Preview and export share normalized slot geometry.
+
+Checkout remains deployment-gated and requires server-side approval tied to the exact saved revision and immutable artwork. No live order was submitted. SKU-specific trim, bleed, gutter and spine must receive production approval. The spine strip remains a content preview, not validated physical spine artwork. Personal browser printing and generated review PDFs are not certified print proofs.
 
 ## Verification
 
@@ -22,4 +24,4 @@ Existing authenticated Prodigi sandbox quote is unchanged. No order/payment endp
 
 `pnpm build`: production compilation, TypeScript, static routes.
 
-Interactive local browser QA was blocked by the computer-use URL security gate. Touch/pinch behavior, responsive visual review, personal print pagination, and a real signed-in Firebase save still require interactive acceptance. Cloud rules remain an additive proposal until emulator and real-account checks pass; cloud saving is still deployment-gated. Do not claim production printing or end-to-end web/iOS draft synchronization.
+Local browser QA verified layout changes and save/reopen persistence. Automated PDF tests cover composition layout, source preservation and rejection paths using a mocked canvas; they are not physical print validation. Touch/pinch behavior, personal print pagination, and a real signed-in Firebase save still require interactive acceptance. Cloud rules remain an additive proposal until emulator and real-account checks pass; cloud saving is still deployment-gated. Do not claim production printing or end-to-end web/iOS draft synchronization.
