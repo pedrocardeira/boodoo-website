@@ -76,3 +76,6 @@
 .premium-brand{display:inline-flex;align-items:center;gap:8px}.premium-brand img{width:1.5em;height:1.5em;border-radius:6px}
 .premium-page.no-photo .premium-page-text{inset:0;width:auto;height:auto;max-height:none;padding:10%;background:#f4efe6;color:#2c2925;display:flex;flex-direction:column;justify-content:safe center}.premium-spine b img{display:inline-block}
 .premium-photo-grid>div>.premium-photo{width:100%;height:100%}
+
+.album-viewer>h2{margin:20px 0}.album-viewer>.premium-actions{margin:20px 0}.album-viewer>.premium-canvas{max-width:min(850px,75vh);margin:25px auto}.album-viewer .premium-photo{touch-action:auto}.viewer-print-pages{display:none}
+@media print{body:has(.album-viewer) .family-sidebar,body:has(.album-viewer) .family-topbar,body:has(.album-viewer) .demo-banner{display:none!important}.album-viewer>*:not(.viewer-print-pages){display:none!important}.album-viewer .viewer-print-pages,.album-viewer .viewer-print-pages *{visibility:visible}.album-viewer .viewer-print-pages{display:block;position:absolute;inset:0}.viewer-print-pages>.premium-page,.viewer-print-pages>.premium-cover{width:170mm;height:170mm;aspect-ratio:auto;break-after:page;break-inside:avoid}.viewer-print-pages>.premium-page.facing{width:250mm;height:125mm}.viewer-print-pages .premium-photo{print-color-adjust:exact;-webkit-print-color-adjust:exact}}

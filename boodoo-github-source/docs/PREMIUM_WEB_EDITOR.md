@@ -1,4 +1,8 @@
-# Premium web book editor
+# Book viewing and export on the website
+
+As of 22 October 2026, the live family route mounts `AlbumViewer`, not the editor. Website album creation, editing and deletion controls are removed at the owner’s request. Existing local/cloud web drafts remain readable and exportable. Viewing uses a non-persisted migration; downloading a JSON backup preserves the untouched stored object. Personal PDF export uses the browser print dialog. Automatic iPhone book transfer is not implemented; the UI explicitly says so. The editor/production components below remain unmounted for compatibility and historical reference.
+
+## Previous editor implementation
 
 Implemented in the existing `/family` album flow, not a separate app. Website only; the iOS PR is a read-only model reference. Existing main-branch source selection, framing contracts, and draft creation were inspected and retained where compatible. The previously unmounted `components/AlbumEditor.tsx` is not the live route; the live implementation remains `components/v2/album-studio.tsx`.
 
