@@ -27,13 +27,13 @@ const alternatives = [
     name: 'Huckleberry',
     url: 'https://huckleberrycare.com/pricing',
     strength: 'Daily tracking and reports, with SweetSpot nap predictions, data-based insights and expert-designed sleep plans on paid memberships.',
-    boodoo: 'Choose BooDoo when you want feeding, sleep and care connected with development, personal photos and a daily journal. Ask BooDoo helps you explore your logs. Editable nap and bedtime plans are coming in the next Pro update; individual specialist consultations are not included.',
+    boodoo: 'Choose BooDoo when you want feeding, sleep and care connected with development, personal photos and a daily journal. Ask BooDoo helps you explore your logs. Pro includes editable nap and bedtime plans in the iPhone app; individual specialist consultations are not included.',
   },
   {
     name: 'Qeepsake',
     url: 'https://qeepsake.com/features/',
     strength: 'Scheduled text prompts, photo journals and customizable printed books. Family contributors are available with its Premium membership.',
-    boodoo: 'Choose BooDoo when memories are part of your everyday care routine. Save photos and words alongside milestones, then arrange a chapter in the web studio preview. Text-message journaling is not included.',
+    boodoo: 'Choose BooDoo when memories are part of your everyday care routine. Save photos and words alongside milestones, then arrange a chapter in the iPhone app. Text-message journaling is not included.',
   },
   {
     name: 'FamilyAlbum',
@@ -45,7 +45,7 @@ const alternatives = [
     name: 'Mixbook',
     url: 'https://www.mixbook.com/studio',
     strength: 'A dedicated photo-book service with Auto-Create, customizable layouts, two-page spreads, collaborative editing and printed ordering.',
-    boodoo: 'Choose BooDoo to start a book from the Moments you already keep. The web studio preview offers 1–4-photo layouts, editable captions, individual photo framing and double-page spreads. Printed ordering is not available yet.',
+    boodoo: 'Choose BooDoo to start a book from the Moments you already keep. Create and edit the book in the iPhone app. The website is for viewing and exporting existing web books; automatic transfer from iPhone is not yet available. Printed ordering is not available yet.',
   },
 ];
 
@@ -101,15 +101,15 @@ export default function Compare() {
           </div>
           <p className="quiet-note">Reviewed October 15, 2026. Published by BooDoo. This is a selected feature comparison; availability can depend on plan, age, device and country.</p>
 
-          <h2>Start with the app. Explore the book studio.</h2>
+          <h2>Create in the app. View and export on the web.</h2>
           <p>The BooDoo iPhone and iPad app is where you log daily care, use Ask BooDoo and save Moments. Free and Pro include different tools, with the details on our pricing page.</p>
           <div className="scope-note">
-            <strong>The website’s album studio is a preview.</strong><br />
-            Try photo layouts, crops, captions, page order and two-page spreads, then save your draft. Demo changes stay in your browser. Printed ordering is unavailable, and a personal preview is not a print proof.
+            <strong>The website’s album area is read-only.</strong><br />
+            View saved pages and export a backup or a personal PDF via your browser’s print dialog. Create and edit books in the app. Automatic transfer of iPhone books and printed ordering are not available yet.
           </div>
           <div className="button-row">
             <Link className="v2-button" href="/pricing">Find your BooDoo plan <ArrowRight size={17} /></Link>
-            <Link className="v2-button outline" href="/family?demo=1&view=albums">Try the book studio <ArrowRight size={17} /></Link>
+            <Link className="v2-button outline" href="/family?demo=1&view=albums">View a sample book <ArrowRight size={17} /></Link>
           </div>
         </section>
       </main>
