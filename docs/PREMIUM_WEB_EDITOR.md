@@ -1,6 +1,6 @@
 # Book viewing and export on the website
 
-As of 22 October 2026, the live family route mounts `AlbumViewer`, not the editor. Website album creation, editing and deletion controls are removed at the owner’s request. Existing local/cloud web drafts remain readable and exportable. Viewing uses a non-persisted migration; downloading a JSON backup preserves the untouched stored object. Personal PDF export uses the browser print dialog. Automatic iPhone book transfer is not implemented; the UI explicitly says so. The editor/production components below remain unmounted for compatibility and historical reference.
+As of 22 October 2026, the live family route mounts `AlbumViewer`, not the editor. Website album creation, editing and deletion controls are removed at the owner’s request. Existing local/cloud web drafts remain readable and exportable. Viewing uses a non-persisted migration; downloading a JSON backup preserves the untouched stored object. Personal PDF export uses the browser print dialog. The updated iPhone app explicitly publishes an immutable original PDF to the owner’s private library. The web portal lists, views and downloads that file without re-rendering. This is not automatic draft synchronization. The editor/production components below remain unmounted for compatibility and historical reference.
 
 ## Previous editor implementation
 
