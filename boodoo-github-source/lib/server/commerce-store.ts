@@ -1,3 +1,4 @@
+import { firebaseWebConfig } from '../v2/firebase-public-config';
 import { createSign, randomUUID } from 'node:crypto';
 
 type Stored<T> = { data: T; updateTime: string };
@@ -118,7 +119,7 @@ export async function listRecords<T>(path: string): Promise<T[]> {
 }
 
 export async function verifiedUser(request: Request): Promise<{ uid: string; email: string }> {
-  const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+  const apiKey = firebaseWebConfig.apiKey;
   const token = request.headers.get('authorization')?.match(/^Bearer (\S+)$/)?.[1];
   if (!apiKey || !token) throw new Error('Authentication required.');
   const response = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=' + encodeURIComponent(apiKey), {

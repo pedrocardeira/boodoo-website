@@ -2,11 +2,12 @@ import { getApps, initializeApp } from 'firebase/app';
 import { getAuth, setPersistence, browserSessionPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-export function firebaseReady(){return Boolean(process.env.NEXT_PUBLIC_FIREBASE_API_KEY&&process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);}
+import { firebaseWebConfig } from './firebase-public-config';
+export function firebaseReady(){return Boolean(firebaseWebConfig.apiKey&&firebaseWebConfig.projectId&&firebaseWebConfig.appId);}
 export const cloudAlbumsEnabled=process.env.NEXT_PUBLIC_WEB_ALBUMS_ENABLED==='true';
 export function firebaseClient(){
  if(!firebaseReady())throw new Error('Account access is being prepared. You can explore the demo in the meantime.');
- const app=getApps()[0]??initializeApp({apiKey:process.env.NEXT_PUBLIC_FIREBASE_API_KEY,authDomain:process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,projectId:process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,storageBucket:process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,appId:process.env.NEXT_PUBLIC_FIREBASE_APP_ID});
+ const app=getApps()[0]??initializeApp(firebaseWebConfig);
  return{auth:getAuth(app),db:getFirestore(app),storage:getStorage(app)};
 }
 export async function prepareSession(){const client=firebaseClient();await setPersistence(client.auth,browserSessionPersistence);return client;}
