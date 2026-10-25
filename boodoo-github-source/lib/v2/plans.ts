@@ -13,14 +13,14 @@ export const freeFeatures = [
   'Pregnancy appointments, wellbeing check-ins and preparation lists',
   'Photos, Moments and milestones in your child’s personal story',
   'Child profiles, weight and height records',
-  'Join a family shared by a Pro subscriber',
+  'Join a Pro family with the permissions set by its owner',
 ];
 
 export const proFeatures = [
   'Full care history beyond today',
   'Insights, patterns, predictions, reports and averages',
   'Custom feeding intervals and feed and sleep notifications',
-  'Share with multiple caregivers through the family owner’s registered Pro account',
+  'Invite caregivers, choose full or input-only access, and remove access in the updated app',
   'Custom colors and themes for your family’s space',
   'Editable sleep plans, reviews and period comparisons',
   'Appointment summaries and questions, memory recaps and digital book PDF export',
