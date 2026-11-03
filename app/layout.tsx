@@ -1,14 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import PublicAnalytics from "@/components/v2/analytics";
-
+import { Analytics } from "@vercel/analytics/react";
+import Script from "next/script";
 import "./globals.css";
-import "./v2.css";
-import "./family.css";
 
-const title = "Boodoo | Little Days. Lifelong Memories.";
+const title = "BooDoo Baby Tracker | Feeding, Sleep & Growth App";
 
 const description =
-  "Track feeding, sleep, care, growth, and milestones. Get insights from your logged records with Ask BooDoo and follow your child’s development from pregnancy through childhood.";
+  "Track your newborn’s feeding, sleep, poop and growth in seconds. BooDoo turns daily logs into clear, age-adapted insights, goals and reminders.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.boodoo.app"),
@@ -30,10 +28,10 @@ export const metadata: Metadata = {
     siteName: "BooDoo",
     images: [
       {
-        url: "/screenshots/v2/app-4088.webp",
-        width: 1000,
-        height: 2173,
-        alt: "BooDoo app stages from pregnancy through childhood",
+        url: "/screenshots/01-dashboard-photo-sources.png",
+        width: 1242,
+        height: 2688,
+        alt: "BooDoo app dashboard screenshot",
       },
     ],
     locale: "en_US",
@@ -44,19 +42,19 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title,
     description,
-    images: ["/screenshots/v2/app-4088.webp"],
+    images: ["/screenshots/01-dashboard-photo-sources.png"],
   },
 
   icons: {
-    icon: "/icons/boodoo-mark.png",
-    apple: "/icons/boodoo-mark.png",
+    icon: "/icons/boodoo-icon.png",
+    apple: "/icons/boodoo-icon.png",
   },
 };
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#26262b",
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({
@@ -67,9 +65,22 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <a className="skip-link" href="#main">Skip to content</a>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-VFPW0E83FF"
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-VFPW0E83FF');
+          `}
+        </Script>
+
         {children}
-        <PublicAnalytics />
+        <Analytics />
       </body>
     </html>
   );

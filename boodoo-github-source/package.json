@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/check-public-release.cjs && next build",
     "start": "next start",
     "lint": "next lint",
     "test": "tsc lib/v2/family-permissions.ts lib/v2/model.ts lib/v2/draft-storage.ts lib/v2/book-composition.ts lib/v2/print-provider.ts lib/v2/print-pdf.ts lib/v2/book-layout.ts lib/v2/published-books.ts lib/v2/firebase-public-config.ts --outDir tests/compiled --module commonjs --target es2022 --skipLibCheck && node --test tests/*.test.cjs"
