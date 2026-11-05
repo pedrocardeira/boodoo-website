@@ -3,7 +3,7 @@ const path = require('node:path');
 
 function publicReleaseIssues(root) {
   const issues = [];
-  for (const route of ['family', 'albums', 'pricing', 'compare']) {
+  for (const route of ['family', 'albums', 'pricing', 'compare', 'pediatrics']) {
     if (fs.existsSync(path.join(root, 'app', route, 'page.tsx'))) issues.push(`Unreleased v2 route: /${route}`);
   }
   for (const file of ['app/page.tsx', 'app/layout.tsx']) {

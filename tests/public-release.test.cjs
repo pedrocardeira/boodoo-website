@@ -23,6 +23,10 @@ test('public builds reject v2 entry points and routes, while preview builds rema
   assert.equal(spawnSync(process.execPath, [guard], { cwd: root, env: { VERCEL_ENV: 'preview' } }).status, 0);
   fs.unlinkSync(path.join(root, 'app/family/page.tsx'));
   fs.writeFileSync(path.join(root, 'app/page.tsx'), 'export default function Home() {}');
+  fs.mkdirSync(path.join(root, 'app/pediatrics'));
+  fs.writeFileSync(path.join(root, 'app/pediatrics/page.tsx'), 'export default function Portal() {}');
+  assert.deepEqual(publicReleaseIssues(root), ['Unreleased v2 route: /pediatrics']);
+  fs.unlinkSync(path.join(root, 'app/pediatrics/page.tsx'));
   assert.deepEqual(publicReleaseIssues(root), []);
   assert.equal(spawnSync(process.execPath, [guard], { cwd: root, env: { VERCEL_ENV: 'production' } }).status, 0);
  } finally { fs.rmSync(root, { recursive: true, force: true }); }
