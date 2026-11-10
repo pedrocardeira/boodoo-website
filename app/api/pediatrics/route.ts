@@ -4,7 +4,7 @@ import { isPortalRequest, portalResponse } from '@/lib/pediatrics/portal-policy'
 export const dynamic='force-dynamic';
 export async function POST(request:NextRequest){
   const headers={'Cache-Control':'no-store'};
-  const previewOnly=process.env.VERCEL_ENV!=='production'&&process.env.VERCEL_GIT_COMMIT_REF==='codex/website-preview';
+  const previewOnly=process.env.VERCEL_ENV!=='production';
   if(process.env.VERCEL_ENV==='production'||(process.env.BOODOO_PEDIATRICS_PORTAL_ENABLED!=='true'&&!previewOnly))return NextResponse.json({error:'portal_disabled'},{status:404,headers});
   const authorization=request.headers.get('authorization');
   if(!authorization?.match(/^Bearer [A-Za-z0-9_.-]+$/))return NextResponse.json({error:'authentication_required'},{status:401,headers});
