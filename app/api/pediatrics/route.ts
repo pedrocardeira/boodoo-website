@@ -14,10 +14,6 @@ export async function POST(request:NextRequest){
     let input:unknown;
     try{input=JSON.parse(raw);}catch{return NextResponse.json({error:'invalid_request'},{status:400,headers});}
     if(!isPortalRequest(input))return NextResponse.json({error:'action_not_available'},{status:403,headers});
-    if(previewOnly){
-      if(input.action==='status')return NextResponse.json({enabled:false,registrationEnabled:false,clinicalEnabled:false,reviewer:false},{headers});
-      return NextResponse.json({error:'pediatric_service_not_launched'},{status:503,headers});
-    }
     const project=firebaseWebConfig.projectId;
     if(!project||!/^[a-z0-9-]+$/.test(project))return NextResponse.json({error:'service_not_configured'},{status:503,headers});
     const response=await fetch(`https://europe-west1-${project}.cloudfunctions.net/pediatricCare`,{
