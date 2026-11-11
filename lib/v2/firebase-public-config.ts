@@ -9,6 +9,19 @@ const registeredWebConfig = {
   "appId": "1:1002578931892:web:9ab899ccd77755b098a7e1"
 };
 
+// The Pediatrics preview must always use its isolated Firebase project. This
+// is intentionally a public web configuration (Firebase API keys are not
+// credentials) and prevents a stale/misconfigured Vercel Preview variable
+// from silently routing professional sign-in to BooDoo production. Production
+// keeps using the registered BooDoo project below.
+const pediatricsSandboxConfig: ClientConfig = {
+  apiKey: 'AIzaSyBLd6i88LJfKMTNkLIKMYvOc6vp8EUPMF8',
+  authDomain: 'boodoo-pediatrics-sandbox.firebaseapp.com',
+  projectId: 'boodoo-pediatrics-sandbox',
+  storageBucket: 'boodoo-pediatrics-sandbox.firebasestorage.app',
+  appId: '1:503066499803:web:a33b4d87a684f68d0f8afe'
+};
+
 type ClientConfig = typeof registeredWebConfig;
 export function resolveFirebaseConfig(overrides: Partial<ClientConfig> = {}): Partial<ClientConfig> {
   const supplied = Object.fromEntries(Object.entries(overrides).filter(([,value]) => Boolean(value)));
@@ -16,10 +29,18 @@ export function resolveFirebaseConfig(overrides: Partial<ClientConfig> = {}): Pa
   if (overrides.projectId && overrides.projectId !== registeredWebConfig.projectId) return supplied;
   return {...registeredWebConfig,...supplied};
 }
-export const firebaseWebConfig = resolveFirebaseConfig({
+const suppliedConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 });
+
+// Any explicit non-production project override is a Preview configuration in
+// this site. Normalize it to the dedicated sandbox so all client and server
+// requests use the same Firebase project.
+export const firebaseWebConfig =
+  suppliedConfig.projectId && suppliedConfig.projectId !== registeredWebConfig.projectId
+    ? pediatricsSandboxConfig
+    : resolveFirebaseConfig(suppliedConfig);
