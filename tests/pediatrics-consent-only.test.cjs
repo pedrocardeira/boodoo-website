@@ -71,7 +71,9 @@ test('proxy retains the exact identity, registration, review and consented-recor
   const requests = [
     { action: 'status' }, { action: 'profile' },
     { action: 'register', name: 'Dr Preview', city: 'Brussels', languages: 'Dutch', biography: 'Synthetic profile', registrationNumber: 'TEST', visaNumber: 'TEST', authority: 'Council', insuranceValidUntil: 2000000000000, credentialPath: 'synthetic/evidence.pdf', country: 'BE', requestedRegions: ['BE'] },
-    { action: 'setAvailability', acceptingPatients: false }, { action: 'patients' },
+    { action: 'setAvailability', acceptingPatients: false },
+    { action: 'setPricing', pricing: { currency: 'EUR', messageCents: 900, videoCents: 3500, videoMinutes: 30, monthlyCents: null, cancellationPolicy: 'Free cancellation up to 24 hours before.' } },
+    { action: 'patients' },
     { action: 'medicalRecords', linkID: 'synthetic-consent', scope: 'growth' }, { action: 'reviewQueue' },
     { action: 'review', doctorUID: 'synthetic-doctor', status: 'verified', verificationSource: 'https://example.com/check', verificationExpiresAt: 2000000000000, licensedRegions: ['BE'], identityVerified: true, licenseVerified: true, specialistVerified: true, insuranceVerified: true },
   ];
@@ -138,7 +140,15 @@ test('real professional overview/profile components render QR identity and conse
   assert.match(overview, /can revoke access/);
   assert.match(profile, /Dr Preview/);
   assert.match(profile, /Pause new connections/);
-  assert.doesNotMatch(overview + profile, /LEGACY_|98765|87654|76543|45678|Legacy working hours|offer|monthly|subscription|price|billing|episodes|video|response window/i);
+  assert.match(profile, /Published consultation prices/);
+  assert.match(profile, /No prices published yet/);
+  assert.doesNotMatch(overview + profile, /LEGACY_|98765|87654|76543|45678|Legacy working hours|offer|subscription|billing|episodes|response window/i);
+  const published = { ...legacyProfile, pricing: { currency: 'EUR', messageCents: 900, videoCents: 3500, videoMinutes: 20, monthlyCents: null, cancellationPolicy: 'Free cancellation up to 24 hours before.' } };
+  const publishedMarkup = renderToStaticMarkup(React.createElement(ProfessionalProfile, { profile: published, busy: false, onAvailability: noop, onSavePricing: async () => {} }));
+  assert.match(publishedMarkup, /€9\.00/);
+  assert.match(publishedMarkup, /€35\.00/);
+  assert.match(publishedMarkup, /20 min/);
+  assert.match(publishedMarkup, /Free cancellation up to 24 hours before/);
   assert.deepEqual(Array.from(portalPanels, panel => panel.id), ['overview', 'profile', 'patients', 'verification']);
   const pending = renderToStaticMarkup(React.createElement(ProfessionalOverview, { profile: { ...legacyProfile, status: 'pending' }, authorizationCount: 0, busy: false, onRegistration: noop, onCopyProfile: noop }));
   assert.doesNotMatch(pending, /Copy profile link/);

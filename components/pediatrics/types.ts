@@ -1,4 +1,5 @@
-export type Doctor={uid:string;name:string;city:string;country:string;languages:string;biography:string;status:string;acceptingPatients:boolean;profileCode:string;verification?:{registrationNumber:string;visaNumber:string;authority:string;credentialPath:string;insuranceValidUntil:number}};
+export type Pricing={currency:string;messageCents?:number|null;videoCents?:number|null;videoMinutes?:number|null;monthlyCents?:number|null;cancellationPolicy?:string|null};
+export type Doctor={uid:string;name:string;city:string;country:string;languages:string;biography:string;status:string;acceptingPatients:boolean;profileCode:string;pricing?:Pricing|null;verification?:{registrationNumber:string;visaNumber:string;authority:string;credentialPath:string;insuranceValidUntil:number}};
 export type Status={enabled:boolean;registrationEnabled:boolean;clinicalEnabled:boolean;reviewer:boolean};
 export type Patient={id:string;childID:string;scopes:string[];expiresAt:number};
 export const scopeLabels:Record<string,string>={growth:'Growth measurements',feeds:'Recorded bottles',nursing:'Breastfeeding',sleep:'Sleep',diapers:'Diapers',stools:'Stools',careEntries:'Medical history'};
