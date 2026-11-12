@@ -81,6 +81,9 @@ export function ProfessionalProfile({ profile, busy, onAvailability, onSavePrici
     </button>}
     {profile.status==='verified'&&<>
       <h2>Published consultation prices</h2>
+      <div className={s.notice} role="status">
+        Prices are published for families to compare. Payments, appointment requests, clinical chat and video calls are not active in this phase.
+      </div>
       {pricing&&<dl><dt>Message consultation</dt><dd>{money(pricing.messageCents,pricing.currency)}</dd><dt>Video consultation</dt><dd>{pricing.videoCents==null?'—':`${money(pricing.videoCents,pricing.currency)} · ${pricing.videoMinutes??30} min`}</dd><dt>Monthly plan</dt><dd>{money(pricing.monthlyCents,pricing.currency)}</dd><dt>Cancellation</dt><dd>{pricing.cancellationPolicy||'Not published'}</dd></dl>}
       {!pricing&&<p className={s.muted}>No prices published yet. Families will see that prices are still to be confirmed.</p>}
       <form className={s.form} onSubmit={save}>
