@@ -2,7 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "git": {
     "deploymentEnabled": {
-      "codex/126-pediatrics-consent-only": false
+      "codex/126-pediatrics-consent-only": false,
+      "codex/website-preview": true
     }
   }
 }

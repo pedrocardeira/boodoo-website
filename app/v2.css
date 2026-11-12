@@ -88,3 +88,5 @@
 @media(max-width:400px){.pro-reasons{grid-template-columns:1fr}.plan-price{gap:8px}.plan-card{padding:24px}.billing-switch button{font-size:13px}}
 
 .boodoo-v2 .page-intro .button-row { justify-content: center; }
+.growing-cards p{flex:none;min-height:132px}
+.growing-stage-screen{height:380px;object-position:center top;display:block;flex:none}
