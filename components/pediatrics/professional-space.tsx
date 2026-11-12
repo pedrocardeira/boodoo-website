@@ -86,11 +86,11 @@ export function ProfessionalProfile({ profile, busy, onAvailability, onSavePrici
       <form className={s.form} onSubmit={save}>
         <label>Currency (ISO)<input value={currency} maxLength={3} onChange={event=>setCurrency(event.target.value)}/></label>
         <label className={s.check}><input type="checkbox" checked={messageEnabled} onChange={event=>setMessageEnabled(event.target.checked)}/>Message consultation</label>
-        {messageEnabled&&<label>Price in euros<input type="number" min="0" max="10000" step="0.01" required value={messagePrice} onChange={event=>setMessagePrice(event.target.value)}/></label>}
+        {messageEnabled&&<label>Price ({currency.trim().toUpperCase()||'ISO'})<input type="number" min="0" max="10000" step="0.01" required value={messagePrice} onChange={event=>setMessagePrice(event.target.value)}/></label>}
         <label className={s.check}><input type="checkbox" checked={videoEnabled} onChange={event=>setVideoEnabled(event.target.checked)}/>Video consultation</label>
-        {videoEnabled&&<><label>Price in euros<input type="number" min="0" max="10000" step="0.01" required value={videoPrice} onChange={event=>setVideoPrice(event.target.value)}/></label><label>Duration<select value={videoMinutes} onChange={event=>setVideoMinutes(event.target.value)}><option value="20">20 minutes</option><option value="30">30 minutes</option></select></label></>}
+        {videoEnabled&&<><label>Price ({currency.trim().toUpperCase()||'ISO'})<input type="number" min="0" max="10000" step="0.01" required value={videoPrice} onChange={event=>setVideoPrice(event.target.value)}/></label><label>Duration<select value={videoMinutes} onChange={event=>setVideoMinutes(event.target.value)}><option value="20">20 minutes</option><option value="30">30 minutes</option></select></label></>}
         <label className={s.check}><input type="checkbox" checked={monthlyEnabled} onChange={event=>setMonthlyEnabled(event.target.checked)}/>Monthly plan</label>
-        {monthlyEnabled&&<label>Price in euros<input type="number" min="0" max="10000" step="0.01" required value={monthlyPrice} onChange={event=>setMonthlyPrice(event.target.value)}/></label>}
+        {monthlyEnabled&&<label>Price ({currency.trim().toUpperCase()||'ISO'})<input type="number" min="0" max="10000" step="0.01" required value={monthlyPrice} onChange={event=>setMonthlyPrice(event.target.value)}/></label>}
         <label>Cancellation policy<textarea required={messageEnabled||videoEnabled||monthlyEnabled} value={cancellation} onChange={event=>setCancellation(event.target.value)} placeholder="Example: free cancellation up to 24 hours before."/></label>
         {formError&&<p className={s.error}>{formError}</p>}
         <div className={s.actions}><button className={s.button} disabled={busy}>Publish prices</button><button type="button" className={s.danger} disabled={busy} onClick={()=>void onSavePricing(null)}>Remove prices</button></div>
