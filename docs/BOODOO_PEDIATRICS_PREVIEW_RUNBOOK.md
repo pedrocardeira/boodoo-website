@@ -14,6 +14,39 @@ agenda, paid booking, clinical messages and browser video rooms.
 - The pediatrician's working surface is the web portal. A family uses the
   iPhone app and, for video, opens the same protected browser room.
 
+## Data-sharing acceptance check
+
+The family must be able to understand the permission before confirming it.
+On the iPhone, open **Pediatrics → Find a doctor → Choose this pediatrician**
+and verify that the screen shows:
+
+- the exact child and pediatrician;
+- one row per category with a plain-language description and a preview link;
+- the number of selected categories and the expiry date;
+- a clear statement that photos, memories and albums are never shared;
+- guardian and Belgium confirmations before **Authorize this sharing** becomes
+  available.
+
+After authorization, **My doctors** repeats the same categories, expiry and
+revocation control. In the professional portal, **Shared records** shows only
+the authorized categories and opens each category separately. If a category is
+not listed, it must not be readable by the pediatrician.
+
+## Tomorrow's smoke test
+
+1. In an iOS Debug build, open Pediatrics, choose the sandbox pediatrician and
+   inspect the permission screen before selecting anything.
+2. Select one category, open its preview, then select a second category and
+   confirm that the summary and expiry update immediately.
+3. Authorize for one day, return to **My doctors**, verify the category list,
+   then revoke and confirm that the access state changes to revoked.
+4. Sign in to the Preview professional portal with the reviewer/doctor test
+   account and verify that the same categories are visible under **Shared
+   records**.
+5. Keep payments/video flags off for this smoke test. Once Stripe and the
+   video provider values are supplied, repeat with one held slot, one test
+   payment and both participants joining the same room.
+
 ## Launch gates
 
 The backend exposes schedule, slot reservation and room authorization only
