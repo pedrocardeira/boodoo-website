@@ -1,7 +1,8 @@
 # BooDoo pediatrics preview runbook
 
-This release publishes a verified professional profile and its consultation
-prices. It does not provide a consultation channel or collect money.
+This preview publishes a verified professional profile and its consultation
+prices. The consultation contract now has explicit, fail-closed gates for
+agenda, paid booking, clinical messages and browser video rooms.
 
 ## What is enabled
 
@@ -10,13 +11,25 @@ prices. It does not provide a consultation channel or collect money.
 - A verified profile with optional message and video price rows, video duration,
   currency, cancellation policy, and optional monthly plan.
 - Preview-only web portal access behind `BOODOO_PEDIATRICS_PORTAL_ENABLED`.
+- The pediatrician's working surface is the web portal. A family uses the
+  iPhone app and, for video, opens the same protected browser room.
 
-## What remains disabled
+## Launch gates
 
-Payments, booking, clinical chat, and videocalls are not implemented in this
-phase. Do not add a checkout, appointment, message, or video action to the
-portal proxy or Firebase function without a separate security and product
-review.
+The backend exposes schedule, slot reservation and room authorization only
+when all of the following are true in both environment configuration and
+`serviceConfiguration/pediatrics`:
+
+```text
+BOODOO_PEDIATRICS_ENGAGEMENTS_ENABLED=true
+BOODOO_PEDIATRICS_PAYMENTS_ENABLED=true
+BOODOO_PEDIATRICS_VIDEO_ENABLED=true
+BOODOO_PEDIATRICS_VIDEO_BASE_URL=https://preview.example/pediatrics/call
+```
+
+The room is never created for an unpaid booking. A real launch still needs a
+Stripe sandbox/webhook and a video provider/TURN configuration; the default
+values remain `false` and the URL remains empty.
 
 ## Safe preview configuration
 
@@ -36,10 +49,14 @@ For the Firebase sandbox, registration/pricing/consent may be enabled with:
 ```text
 BOODOO_PEDIATRICS_ENABLED=true
 BOODOO_PEDIATRICS_CLINICAL_ENABLED=false
+BOODOO_PEDIATRICS_ENGAGEMENTS_ENABLED=false
+BOODOO_PEDIATRICS_PAYMENTS_ENABLED=false
+BOODOO_PEDIATRICS_VIDEO_ENABLED=false
+BOODOO_PEDIATRICS_VIDEO_BASE_URL=
 ```
 
-The Firestore service configuration must also keep `clinicalEnabled=false`.
-There is no payment, booking, chat, or video endpoint in this release.
+The Firestore service configuration must keep the three corresponding launch
+flags false until the payment and video-provider reviews are complete.
 
 ## Release checks
 
@@ -53,6 +70,8 @@ iOS:      for test in scripts/test_*.py; do python3 "$test"; done
 ```
 
 Then smoke-test: email verification, registration upload, reviewer approval,
-profile/QR identity, consented records, and the published price display. A
-production URL must stay unavailable until the clinical and commercial phases
-have their own review and tests.
+profile/QR identity, consented records, and the published price display. When
+the launch gates are enabled in a separate sandbox, also test schedule overlap,
+unpaid-room rejection, paid booking, and both participants joining the same
+room. A production URL must stay unavailable until the clinical, payment and
+video-provider reviews have their own approval and tests.

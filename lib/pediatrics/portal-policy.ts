@@ -6,6 +6,17 @@ const requestFields = {
   register: ['name', 'city', 'languages', 'biography', 'registrationNumber', 'visaNumber', 'authority', 'insuranceValidUntil', 'credentialPath', 'country', 'requestedRegions'],
   setAvailability: ['acceptingPatients'],
   setPricing: ['pricing'],
+  schedule: [],
+  saveSlots: ['slots'],
+  bookings: ['asDoctor'],
+  threads: ['asDoctor'],
+  threadMessages: ['threadID', 'beforeID'],
+  sendThreadMessage: ['threadID', 'messageID', 'text'],
+  closeEpisode: ['threadID'],
+  createVideoRoom: ['bookingID'],
+  joinVideoRoom: ['roomID'],
+  createCheckoutSession: ['kind', 'targetID', 'requestID'],
+  paymentStatus: ['paymentID'],
   patients: [],
   medicalRecords: ['linkID', 'scope'],
   reviewQueue: [],
@@ -47,9 +58,20 @@ export function portalResponse(action: PediatricsPortalAction, body: unknown): u
   const value = body as Record<string, unknown>;
   if (value.error) return select(value, ['error']);
   switch (action) {
-    case 'status': return select(value, ['enabled', 'registrationEnabled', 'clinicalEnabled', 'reviewer']);
+    case 'status': return select(value, ['enabled', 'registrationEnabled', 'clinicalEnabled', 'paymentsEnabled', 'videoEnabled', 'reviewer']);
     case 'profile': return { profile: profile(value.profile) };
     case 'reviewQueue': return { profiles: Array.isArray(value.profiles) ? value.profiles.map(profile) : [] };
+    case 'schedule': return {
+      slots: Array.isArray(value.slots) ? value.slots.map(slot => select(slot, ['id', 'startAt', 'minutes', 'bookingStatus', 'bookingID', 'holdUntil'])) : [],
+      timeZone: typeof value.timeZone === 'string' ? value.timeZone : null,
+    };
+    case 'bookings': return { bookings: Array.isArray(value.bookings) ? value.bookings.map(booking => select(booking, ['id', 'doctorUID', 'parentUID', 'householdID', 'childID', 'slotID', 'startAt', 'minutes', 'status', 'paymentStatus', 'pricing', 'createdAt', 'updatedAt'])) : [] };
+    case 'threads': return { threads: Array.isArray(value.threads) ? value.threads.map(thread => select(thread, ['id', 'doctorUID', 'parentUID', 'householdID', 'childID', 'status', 'paymentStatus', 'createdAt', 'updatedAt'])) : [] };
+    case 'threadMessages': return { messages: Array.isArray(value.messages) ? value.messages.map(message => select(message, ['id', 'senderUID', 'text', 'createdAt'])) : [], beforeID: value.beforeID ?? null };
+    case 'createVideoRoom':
+    case 'joinVideoRoom': return select(value, ['roomID', 'url', 'role']);
+    case 'createCheckoutSession': return select(value, ['paymentID', 'status', 'sessionID', 'url']);
+    case 'paymentStatus': return select(value, ['paymentID', 'status', 'sessionID']);
     default: return body;
   }
 }

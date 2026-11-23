@@ -55,7 +55,7 @@ const legacyProfile = {
 
 test('proxy rejects commercial, messaging and arbitrary actions without contacting the backend', async () => {
   const { request, calls } = proxy();
-  for (const action of ['saveOffer', 'bookings', 'booking', 'createBooking', 'requestBooking', 'subscriptions', 'subscribe', 'startSubscription', 'episodes', 'startEpisode', 'messages', 'sendMessage', 'checkout', 'toString', '__proto__', 'unknownAction']) {
+  for (const action of ['saveOffer', 'booking', 'createBooking', 'requestBooking', 'subscribe', 'startSubscription', 'episodes', 'startEpisode', 'messages', 'sendMessage', 'checkout', 'toString', '__proto__', 'unknownAction']) {
     const response = await request({ action, offer: legacyProfile.offer });
     assert.equal(response.status, 403, action);
     assert.deepEqual(await response.json(), { error: 'action_not_available' });
@@ -76,6 +76,7 @@ test('proxy retains the exact identity, registration, review and consented-recor
     { action: 'patients' },
     { action: 'medicalRecords', linkID: 'synthetic-consent', scope: 'growth' }, { action: 'reviewQueue' },
     { action: 'review', doctorUID: 'synthetic-doctor', status: 'verified', verificationSource: 'https://example.com/check', verificationExpiresAt: 2000000000000, licensedRegions: ['BE'], identityVerified: true, licenseVerified: true, specialistVerified: true, insuranceVerified: true },
+    { action: 'schedule' }, { action: 'bookings', asDoctor: true }, { action: 'threads', asDoctor: true },
   ];
   const { request, calls } = proxy();
   for (const input of requests) assert.equal((await request(input)).status, 200, input.action);
@@ -99,7 +100,7 @@ test('legacy profile and reviewer responses cannot expose offers, prices or resp
     assert.doesNotMatch(JSON.stringify(result), /LEGACY_|98765|87654|76543|45678|serviceHours|responseHours|offer|prices|commercialTerms/);
   }
   const { request } = proxy({ body: { enabled: true, registrationEnabled: true, clinicalEnabled: true, reviewer: false, paymentsEnabled: true, videoEnabled: true } });
-  assert.deepEqual(await (await request({ action: 'status' })).json(), { enabled: true, registrationEnabled: true, clinicalEnabled: true, reviewer: false });
+  assert.deepEqual(await (await request({ action: 'status' })).json(), { enabled: true, registrationEnabled: true, clinicalEnabled: true, paymentsEnabled: true, videoEnabled: true, reviewer: false });
 });
 
 test('authorized records remain readable and a revoked consent error remains denied', async () => {
@@ -149,7 +150,7 @@ test('real professional overview/profile components render QR identity and conse
   assert.match(publishedMarkup, /€35\.00/);
   assert.match(publishedMarkup, /20 min/);
   assert.match(publishedMarkup, /Free cancellation up to 24 hours before/);
-  assert.deepEqual(Array.from(portalPanels, panel => panel.id), ['overview', 'profile', 'patients', 'verification']);
+  assert.deepEqual(Array.from(portalPanels, panel => panel.id), ['overview', 'profile', 'consultations', 'patients', 'verification']);
   const pending = renderToStaticMarkup(React.createElement(ProfessionalOverview, { profile: { ...legacyProfile, status: 'pending' }, authorizationCount: 0, busy: false, onRegistration: noop, onCopyProfile: noop }));
   assert.doesNotMatch(pending, /Copy profile link/);
 });

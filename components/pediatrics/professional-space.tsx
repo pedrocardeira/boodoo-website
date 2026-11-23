@@ -1,16 +1,19 @@
-import { useState, type FormEvent } from 'react';
-import type { Doctor, Pricing } from './types';
+import { useEffect, useState, type FormEvent } from 'react';
+import type { Doctor, Pricing, Status } from './types';
+import type { PediatricsPortalAction } from '@/lib/pediatrics/portal-policy';
 import s from './portal.module.css';
 
 export const portalPanels = [
   { id: 'overview', label: 'Overview', title: 'Your professional space', reviewerOnly: false },
   { id: 'profile', label: 'Registration', title: 'Professional registration', reviewerOnly: false },
+  { id: 'consultations', label: 'Consultations', title: 'Consultation workspace', reviewerOnly: false },
   { id: 'patients', label: 'Shared records', title: 'Authorized records', reviewerOnly: false },
   { id: 'verification', label: 'Verification', title: 'Professional verification', reviewerOnly: true },
 ] as const;
 
-export function ProfessionalOverview({ profile, authorizationCount, busy, onRegistration, onCopyProfile }: {
+export function ProfessionalOverview({ profile, status, authorizationCount, busy, onRegistration, onCopyProfile }: {
   profile: Doctor | null;
+  status?: Status | null;
   authorizationCount: number;
   busy: boolean;
   onRegistration: () => void;
@@ -36,6 +39,11 @@ export function ProfessionalOverview({ profile, authorizationCount, busy, onRegi
       <h2>Connect through your profile.</h2>
       <p>Show your QR code in the iPhone professional area, or share your profile link. A parent can then choose which medical records to share with you in BooDoo.</p>
       {profile?.status === 'verified' && profile.profileCode && <button className={s.secondary} disabled={busy} onClick={onCopyProfile}>Copy profile link</button>}
+    </section>
+    <section className={s.card}>
+      <h2>Consultation workspace</h2>
+      <p>You work from this browser portal. Families use the iPhone app to request and pay for a service; a video consultation opens the same protected web room for both sides.</p>
+      <span className={s.badge}>Payments and calls are {status?.paymentsEnabled ? 'enabled in this environment' : 'waiting for launch configuration'}</span>
     </section>
   </>;
 }
@@ -101,4 +109,69 @@ export function ProfessionalProfile({ profile, busy, onAvailability, onSavePrici
     </>}
     <p className={s.muted}>Changes to verified identity or credentials require a new professional review. Prices are display-only in this development portal; payments and booking are not active.</p>
   </section>;
+}
+
+type ConsultationCall = <T = unknown>(action: PediatricsPortalAction, fields?: Record<string, unknown>) => Promise<T>;
+type Slot = { id: string; startAt: number; minutes: number; bookingStatus?: string; bookingID?: string };
+type Booking = { id: string; startAt: number; minutes: number; status: string; paymentStatus: string; childID: string; pricing?: { currency?: string; amountCents?: number; serviceType?: string } };
+
+export function ConsultationWorkspace({ status, busy, call }: { status: Status; busy: boolean; call: ConsultationCall }) {
+  const [slots, setSlots] = useState<Slot[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [slotAt, setSlotAt] = useState('');
+  const [minutes, setMinutes] = useState('30');
+  const [message, setMessage] = useState('');
+  const load = async () => {
+    try {
+      const [schedule, current] = await Promise.all([
+        call<{ slots: Slot[] }>('schedule'),
+        call<{ bookings: Booking[] }>('bookings', { asDoctor: true }),
+      ]);
+      setSlots(schedule.slots ?? []); setBookings(current.bookings ?? []); setMessage('');
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Could not load consultations.'); }
+  };
+  useEffect(() => { if (status.clinicalEnabled) void load(); }, [status.clinicalEnabled]);
+  const saveSlot = async (event: FormEvent) => {
+    event.preventDefault();
+    const startAt = Date.parse(slotAt);
+    if (!Number.isFinite(startAt) || ![20, 30].includes(Number(minutes))) { setMessage('Choose a future date and a 20 or 30 minute duration.'); return; }
+    try {
+      const next = [...slots.filter(slot => slot.startAt > Date.now()), { id: crypto.randomUUID(), startAt, minutes: Number(minutes) }]
+        .sort((a, b) => a.startAt - b.startAt);
+      await call('saveSlots', { slots: next });
+      setSlotAt(''); await load();
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Could not save the slot.'); }
+  };
+  const openRoom = async (bookingID: string) => {
+    try {
+      const room = await call<{ url: string }>('createVideoRoom', { bookingID });
+      if (!room.url.startsWith('https://')) throw new Error('The video room URL is not secure.');
+      window.open(room.url, '_blank', 'noopener,noreferrer');
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'The video room is not available.'); }
+  };
+  return <>
+    <section className={s.card}>
+      <h2>Where consultations happen</h2>
+      <p>You stay in this browser portal. Families book and pay from the iPhone app; a confirmed video booking opens the same protected browser room for both participants.</p>
+      {!status.paymentsEnabled && <div className={s.notice}>Payments are not configured for this environment, so no booking or room can be opened yet.</div>}
+      {status.paymentsEnabled && !status.videoEnabled && <div className={s.notice}>Payments are configured, but video is still waiting for a provider/TURN room configuration.</div>}
+    </section>
+    {status.clinicalEnabled && <section className={s.card}>
+      <h2>Video availability</h2>
+      <form className={s.form} onSubmit={saveSlot}>
+        <label>New slot<input type="datetime-local" required value={slotAt} onChange={event => setSlotAt(event.target.value)} /></label>
+        <label>Duration<select value={minutes} onChange={event => setMinutes(event.target.value)}><option value="20">20 minutes</option><option value="30">30 minutes</option></select></label>
+        <button className={s.button} disabled={busy || !status.videoEnabled}>Save availability</button>
+      </form>
+      {slots.length > 0 && <ul>{slots.map(slot => <li key={slot.id}>{new Date(slot.startAt).toLocaleString()} · {slot.minutes} min</li>)}</ul>}
+    </section>}
+    {status.clinicalEnabled && <section className={s.card}>
+      <h2>Bookings</h2>
+      {bookings.length === 0 ? <p className={s.muted}>No bookings yet.</p> : bookings.map(booking => <div className={s.patient} key={booking.id}>
+        <div><strong>{new Date(booking.startAt).toLocaleString()}</strong><p className={s.muted}>Child · {booking.childID.slice(0, 8)} · {booking.status} · {booking.paymentStatus}</p></div>
+        {booking.status === 'confirmed' && booking.paymentStatus === 'paid' && <button className={s.secondary} disabled={busy || !status.videoEnabled} onClick={() => void openRoom(booking.id)}>Open video room</button>}
+      </div>)}
+    </section>}
+    {message && <p className={s.error} role="alert">{message}</p>}
+  </>;
 }
