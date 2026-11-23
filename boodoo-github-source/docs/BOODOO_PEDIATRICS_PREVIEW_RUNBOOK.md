@@ -48,7 +48,8 @@ Run these from the corresponding repository before publishing a preview:
 ```text
 website:  npm test && npm run build
 functions: npm test
-iOS:      python3 scripts/test_*.py (all scripts) and the approved Xcode simulator build
+iOS:      for test in scripts/test_*.py; do python3 "$test"; done
+          plus the approved Xcode simulator build
 ```
 
 Then smoke-test: email verification, registration upload, reviewer approval,
