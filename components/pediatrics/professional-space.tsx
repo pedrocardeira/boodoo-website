@@ -52,8 +52,9 @@ const centsToEuros=(value:number|undefined|null)=>value==null?'':(value/100).toF
 const eurosToCents=(value:string)=>{const amount=Number(value.replace(',','.'));return Number.isFinite(amount)&&amount>=0&&amount<=10000?Math.round(amount*100):null;};
 const money=(value:number|undefined|null,currency:string)=>value==null?'—':new Intl.NumberFormat(undefined,{style:'currency',currency}).format(value/100);
 
-export function ProfessionalProfile({ profile, busy, onAvailability, onSavePricing }: {
+export function ProfessionalProfile({ profile, status, busy, onAvailability, onSavePricing }: {
   profile: Doctor;
+  status?: Status | null;
   busy: boolean;
   onAvailability: () => void;
   onSavePricing: (pricing: Pricing|null) => Promise<void>;
@@ -90,7 +91,9 @@ export function ProfessionalProfile({ profile, busy, onAvailability, onSavePrici
     {profile.status==='verified'&&<>
       <h2>Published consultation prices</h2>
       <div className={s.notice} role="status">
-        Prices are published for families to compare. Payments, appointment requests, clinical chat and video calls are not active in this phase.
+        {status?.paymentsEnabled
+          ? 'Payments and appointment requests are enabled for this test environment. Clinical chat and video rooms appear only after the corresponding service is paid and confirmed.'
+          : 'Prices are published for families to compare. Payments and appointment requests are waiting for this environment to be enabled.'}
       </div>
       {pricing&&<dl><dt>Message consultation</dt><dd>{money(pricing.messageCents,pricing.currency)}</dd><dt>Video consultation</dt><dd>{pricing.videoCents==null?'—':`${money(pricing.videoCents,pricing.currency)} · ${pricing.videoMinutes??30} min`}</dd><dt>Monthly plan</dt><dd>{money(pricing.monthlyCents,pricing.currency)}</dd><dt>Cancellation</dt><dd>{pricing.cancellationPolicy||'Not published'}</dd></dl>}
       {!pricing&&<p className={s.muted}>No prices published yet. Families will see that prices are still to be confirmed.</p>}
@@ -107,17 +110,23 @@ export function ProfessionalProfile({ profile, busy, onAvailability, onSavePrici
         <div className={s.actions}><button className={s.button} disabled={busy}>Publish prices</button><button type="button" className={s.danger} disabled={busy} onClick={()=>void onSavePricing(null)}>Remove prices</button></div>
       </form>
     </>}
-    <p className={s.muted}>Changes to verified identity or credentials require a new professional review. Prices are display-only in this development portal; payments and booking are not active.</p>
+    <p className={s.muted}>Changes to verified identity or credentials require a new professional review. Published prices are reconstructed by the server at checkout; the browser never sets a consultation amount.</p>
   </section>;
 }
 
 type ConsultationCall = <T = unknown>(action: PediatricsPortalAction, fields?: Record<string, unknown>) => Promise<T>;
 type Slot = { id: string; startAt: number; minutes: number; bookingStatus?: string; bookingID?: string };
 type Booking = { id: string; startAt: number; minutes: number; status: string; paymentStatus: string; childID: string; pricing?: { currency?: string; amountCents?: number; serviceType?: string } };
+type Thread = { id: string; status: string; paymentStatus?: string; childID: string; createdAt?: number; updatedAt?: number };
+type ThreadMessage = { id: string; senderUID: string; text: string; createdAt: number };
 
 export function ConsultationWorkspace({ status, busy, call }: { status: Status; busy: boolean; call: ConsultationCall }) {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [selectedThreadID, setSelectedThreadID] = useState<string | null>(null);
+  const [messages, setMessages] = useState<ThreadMessage[]>([]);
+  const [draft, setDraft] = useState('');
   const [slotAt, setSlotAt] = useState('');
   const [minutes, setMinutes] = useState('30');
   const [message, setMessage] = useState('');
@@ -127,7 +136,8 @@ export function ConsultationWorkspace({ status, busy, call }: { status: Status; 
         call<{ slots: Slot[] }>('schedule'),
         call<{ bookings: Booking[] }>('bookings', { asDoctor: true }),
       ]);
-      setSlots(schedule.slots ?? []); setBookings(current.bookings ?? []); setMessage('');
+      const conversations = await call<{ threads: Thread[] }>('threads', { asDoctor: true });
+      setSlots(schedule.slots ?? []); setBookings(current.bookings ?? []); setThreads(conversations.threads ?? []); setMessage('');
     } catch (error) { setMessage(error instanceof Error ? error.message : 'Could not load consultations.'); }
   };
   useEffect(() => { if (status.clinicalEnabled) void load(); }, [status.clinicalEnabled]);
@@ -148,6 +158,26 @@ export function ConsultationWorkspace({ status, busy, call }: { status: Status; 
       if (!room.url.startsWith('https://')) throw new Error('The video room URL is not secure.');
       window.open(room.url, '_blank', 'noopener,noreferrer');
     } catch (error) { setMessage(error instanceof Error ? error.message : 'The video room is not available.'); }
+  };
+  const openThread = async (threadID: string) => {
+    setSelectedThreadID(threadID); setMessages([]);
+    try {
+      const result = await call<{ messages: ThreadMessage[] }>('threadMessages', { threadID });
+      setMessages(result.messages ?? []);
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Could not load messages.'); }
+  };
+  const sendMessage = async (event: FormEvent) => {
+    event.preventDefault();
+    const threadID = selectedThreadID;
+    const text = draft.trim();
+    if (!threadID || !text || busy) return;
+    try {
+      await call('sendThreadMessage', { threadID, messageID: crypto.randomUUID(), text });
+      setDraft('');
+      const result = await call<{ messages: ThreadMessage[] }>('threadMessages', { threadID });
+      setMessages(result.messages ?? []);
+      await load();
+    } catch (error) { setMessage(error instanceof Error ? error.message : 'Could not send the message.'); }
   };
   return <>
     <section className={s.card}>
@@ -171,6 +201,19 @@ export function ConsultationWorkspace({ status, busy, call }: { status: Status; 
         <div><strong>{new Date(booking.startAt).toLocaleString()}</strong><p className={s.muted}>Child · {booking.childID.slice(0, 8)} · {booking.status} · {booking.paymentStatus}</p></div>
         {booking.status === 'confirmed' && booking.paymentStatus === 'paid' && <button className={s.secondary} disabled={busy || !status.videoEnabled} onClick={() => void openRoom(booking.id)}>Open video room</button>}
       </div>)}
+    </section>}
+    {status.clinicalEnabled && <section className={s.card}>
+      <h2>Clinical messages</h2>
+      <p className={s.muted}>Messages are available only after the family has completed payment. Do not use this channel for emergencies.</p>
+      {threads.length === 0 ? <p className={s.muted}>No message consultations yet.</p> : <>
+        <div className={s.actions}>{threads.map(thread => <button key={thread.id} type="button" className={selectedThreadID === thread.id ? s.button : s.secondary} onClick={() => void openThread(thread.id)}>
+          Child · {thread.childID.slice(0, 8)} · {thread.paymentStatus === 'paid' ? thread.status : 'payment pending'}
+        </button>)}</div>
+        {selectedThreadID && <div className={s.form}>
+          {messages.length === 0 ? <p className={s.muted}>No messages available yet. The conversation may still be awaiting payment.</p> : <div aria-live="polite">{messages.map(item => <article className={s.notice} key={item.id}><strong>Message</strong><p>{item.text}</p><small>{new Date(item.createdAt).toLocaleString()}</small></article>)}</div>}
+          <form className={s.form} onSubmit={sendMessage}><label>Reply<textarea value={draft} maxLength={8000} onChange={event => setDraft(event.target.value)} /></label><button className={s.button} disabled={busy || !draft.trim()}>Send message</button></form>
+        </div>}
+      </>}
     </section>}
     {message && <p className={s.error} role="alert">{message}</p>}
   </>;
