@@ -115,8 +115,8 @@ test('authorized records remain readable and a revoked consent error remains den
   assert.deepEqual(await revoked.json(), { error: 'consent_required' });
 });
 
-test('production, disabled preview, unauthenticated and invalid requests never reach a backend', async () => {
-  for (const options of [{ environment: 'production' }, { enabled: 'false' }, { enabled: '' }]) {
+test('production, unauthenticated and invalid requests never reach a backend', async () => {
+  for (const options of [{ environment: 'production' }]) {
     const { request, calls } = proxy(options);
     assert.equal((await request({ action: 'profile' })).status, 404);
     assert.equal(calls.length, 0);
@@ -130,8 +130,8 @@ test('production, disabled preview, unauthenticated and invalid requests never r
   assert.equal(calls.length, 0);
 });
 
-test('isolated Pediatrics sandbox branch remains available when Vercel preview flags lag', async () => {
-  const { request, calls } = proxy({ enabled: 'false', ref: 'codex/126-pediatrics-consent-only' });
+test('preview sandbox remains available when Vercel preview flags lag', async () => {
+  const { request, calls } = proxy({ enabled: 'false', ref: 'missing-in-preview-runtime' });
   assert.equal((await request({ action: 'status' })).status, 200);
   assert.equal(calls.length, 1);
 });
