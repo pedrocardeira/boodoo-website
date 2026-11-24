@@ -51,43 +51,67 @@ export function ProfessionalOverview({ profile, status, authorizationCount, busy
 const centsToEuros=(value:number|undefined|null)=>value==null?'':(value/100).toFixed(2);
 const eurosToCents=(value:string)=>{const amount=Number(value.replace(',','.'));return Number.isFinite(amount)&&amount>=0&&amount<=10000?Math.round(amount*100):null;};
 const money=(value:number|undefined|null,currency:string)=>value==null?'—':new Intl.NumberFormat(undefined,{style:'currency',currency}).format(value/100);
+const MESSAGE_RESPONSE_OPTIONS=[{hours:4,label:'Within 4 hours'},{hours:12,label:'Within 12 hours'},{hours:24,label:'Within 24 hours'},{hours:48,label:'Within 48 hours'},{hours:72,label:'Within 72 hours'}] as const;
+const SUGGESTED_PRICES={message:'25.00',video20:'45.00',video30:'60.00',monthly:'90.00'} as const;
+const responseLabel=(hours:number|undefined|null)=>MESSAGE_RESPONSE_OPTIONS.find(option=>option.hours===hours)?.label??'Not set';
 
-export function ProfessionalProfile({ profile, status, busy, onAvailability, onSavePricing }: {
+export function ProfessionalProfile({ profile, status, busy, onAvailability, onSavePricing, onSavePhoto }: {
   profile: Doctor;
   status?: Status | null;
   busy: boolean;
   onAvailability: () => void;
   onSavePricing: (pricing: Pricing|null) => Promise<void>;
+  onSavePhoto: (photo: File|null) => Promise<void>;
 }) {
   const pricing=profile.pricing??null;
   const [currency,setCurrency]=useState(pricing?.currency??'EUR');
   const [messageEnabled,setMessageEnabled]=useState(pricing?.messageCents!=null);
   const [messagePrice,setMessagePrice]=useState(centsToEuros(pricing?.messageCents));
+  const [messageResponseHours,setMessageResponseHours]=useState(String(pricing?.messageResponseHours??24));
   const [videoEnabled,setVideoEnabled]=useState(pricing?.videoCents!=null);
   const [videoPrice,setVideoPrice]=useState(centsToEuros(pricing?.videoCents));
   const [videoMinutes,setVideoMinutes]=useState(String(pricing?.videoMinutes??30));
   const [monthlyEnabled,setMonthlyEnabled]=useState(pricing?.monthlyCents!=null);
   const [monthlyPrice,setMonthlyPrice]=useState(centsToEuros(pricing?.monthlyCents));
   const [cancellation,setCancellation]=useState(pricing?.cancellationPolicy??'');
+  const [photoFile,setPhotoFile]=useState<File|null>(null);
   const [formError,setFormError]=useState('');
   const save=async(event:FormEvent<HTMLFormElement>)=>{
     event.preventDefault();setFormError('');
     const messageCents=messageEnabled?eurosToCents(messagePrice):null;
+    const responseHours=messageEnabled?Number(messageResponseHours):null;
     const videoCents=videoEnabled?eurosToCents(videoPrice):null;
     const monthlyCents=monthlyEnabled?eurosToCents(monthlyPrice):null;
     if((messageEnabled&&messageCents==null)||(videoEnabled&&videoCents==null)||(monthlyEnabled&&monthlyCents==null))return setFormError('Enter valid prices in euros.');
+    if(messageEnabled&&!MESSAGE_RESPONSE_OPTIONS.some(option=>option.hours===responseHours))return setFormError('Choose an expected response time for message consultations.');
     if((messageCents!=null||videoCents!=null||monthlyCents!=null)&&!cancellation.trim())return setFormError('Add a cancellation policy before publishing prices.');
-    const value:Pricing={currency:currency.trim().toUpperCase(),messageCents,videoCents,videoMinutes:videoCents==null?null:Number(videoMinutes),monthlyCents,cancellationPolicy:cancellation.trim()||null};
+    const value:Pricing={currency:currency.trim().toUpperCase(),messageCents,messageResponseHours:responseHours,videoCents,videoMinutes:videoCents==null?null:Number(videoMinutes),monthlyCents,cancellationPolicy:cancellation.trim()||null};
     await onSavePricing(value.messageCents==null&&value.videoCents==null&&value.monthlyCents==null?null:value);
   };
+  const applySuggestion=(service:'message'|'video'|'monthly')=>{
+    if(service==='message'){setMessageEnabled(true);setMessagePrice(SUGGESTED_PRICES.message);setMessageResponseHours('24');}
+    if(service==='video'){setVideoEnabled(true);setVideoPrice(videoMinutes==='20'?SUGGESTED_PRICES.video20:SUGGESTED_PRICES.video30);}
+    if(service==='monthly'){setMonthlyEnabled(true);setMonthlyPrice(SUGGESTED_PRICES.monthly);}
+  };
   return <section className={`${s.card} ${s.form}`}>
-    <h2>{profile.name}</h2>
-    <span className={s.badge}>{profile.status}</span>
+    <div style={{display:'flex',gap:18,alignItems:'center',flexWrap:'wrap'}}>
+      {profile.photoURL?<img src={profile.photoURL} alt={`${profile.name} profile`} style={{width:88,height:88,borderRadius:'50%',objectFit:'cover',border:'1px solid #c9d9d0'}}/>:<div aria-hidden="true" style={{width:88,height:88,borderRadius:'50%',display:'grid',placeItems:'center',background:'#e9efe9',color:'#31574d',fontSize:30,fontWeight:700}}>{profile.name.slice(0,1).toUpperCase()}</div>}
+      <div><h2>{profile.name}</h2><span className={s.badge}>{profile.status}</span></div>
+    </div>
     <p>{profile.biography}</p>
     <p>{profile.city} · {profile.languages}</p>
-    {profile.status === 'verified' && <button disabled={busy} className={s.secondary} onClick={onAvailability}>
-      {profile.acceptingPatients ? 'Pause new connections' : 'Accept new connections'}
-    </button>}
+    {profile.status === 'verified' && <>
+      <div className={s.notice} role="status"><strong>{profile.acceptingPatients?'Accepting new patients':'Not accepting new patients'}</strong><p>{profile.acceptingPatients?'Families can request one of your published services.':'New requests are paused; existing authorized records remain available.'}</p></div>
+      <button type="button" disabled={busy} className={s.secondary} onClick={onAvailability}>
+        {profile.acceptingPatients ? 'Stop accepting new patients' : 'Accept new patients'}
+      </button>
+      <section className={s.notice} aria-label="Professional profile photo">
+        <strong>Profile photo</strong>
+        <p>Use a clear head-and-shoulders photo. It is visible to families with your verified profile. JPG, PNG or WebP, maximum 5 MB.</p>
+        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={event=>setPhotoFile(event.target.files?.[0]??null)}/>
+        <div className={s.actions}><button type="button" className={s.secondary} disabled={busy||!photoFile} onClick={()=>{if(photoFile)void onSavePhoto(photoFile);}}>Save photo</button>{profile.photoURL&&<button type="button" className={s.danger} disabled={busy} onClick={()=>void onSavePhoto(null)}>Remove photo</button>}</div>
+      </section>
+    </>}
     {profile.status==='verified'&&<>
       <h2>Published consultation prices</h2>
       <div className={s.notice} role="status">
@@ -95,12 +119,14 @@ export function ProfessionalProfile({ profile, status, busy, onAvailability, onS
           ? 'Payments and appointment requests are enabled for this test environment. Clinical chat and video rooms appear only after the corresponding service is paid and confirmed.'
           : 'Prices are published for families to compare. Payments and appointment requests are waiting for this environment to be enabled.'}
       </div>
-      {pricing&&<dl><dt>Message consultation</dt><dd>{money(pricing.messageCents,pricing.currency)}</dd><dt>Video consultation</dt><dd>{pricing.videoCents==null?'—':`${money(pricing.videoCents,pricing.currency)} · ${pricing.videoMinutes??30} min`}</dd><dt>Monthly plan</dt><dd>{money(pricing.monthlyCents,pricing.currency)}</dd><dt>Cancellation</dt><dd>{pricing.cancellationPolicy||'Not published'}</dd></dl>}
+      {pricing&&<dl><dt>Message consultation</dt><dd>{money(pricing.messageCents,pricing.currency)}</dd><dt>Expected message response</dt><dd>{pricing.messageCents==null?'—':responseLabel(pricing.messageResponseHours)}</dd><dt>Video consultation</dt><dd>{pricing.videoCents==null?'—':`${money(pricing.videoCents,pricing.currency)} · ${pricing.videoMinutes??30} min`}</dd><dt>Monthly plan</dt><dd>{money(pricing.monthlyCents,pricing.currency)}</dd><dt>Cancellation</dt><dd>{pricing.cancellationPolicy||'Not published'}</dd></dl>}
       {!pricing&&<p className={s.muted}>No prices published yet. Families will see that prices are still to be confirmed.</p>}
+      <div className={s.notice}><strong>Suggested starting prices · editable</strong><p>These are only starting points; choose the services you actually provide and change any amount before publishing.</p><div className={s.actions}><button type="button" className={s.secondary} onClick={()=>applySuggestion('message')}>Message · €25 · reply within 24h</button><button type="button" className={s.secondary} onClick={()=>applySuggestion('video')}>Video · €{videoMinutes==='20'?'45':'60'} · {videoMinutes} min</button><button type="button" className={s.secondary} onClick={()=>applySuggestion('monthly')}>Monthly · €90</button></div></div>
+      <div className={s.notice}><strong>What you must provide</strong><ul><li>Currency and a price for every service you enable.</li><li>An expected response time for message consultations.</li><li>Video duration (20 or 30 minutes) when video is enabled.</li><li>A clear cancellation policy before prices can be published.</li></ul></div>
       <form className={s.form} onSubmit={save}>
         <label>Currency (ISO)<input value={currency} maxLength={3} onChange={event=>setCurrency(event.target.value)}/></label>
         <label className={s.check}><input type="checkbox" checked={messageEnabled} onChange={event=>setMessageEnabled(event.target.checked)}/>Message consultation</label>
-        {messageEnabled&&<label>Price ({currency.trim().toUpperCase()||'ISO'})<input type="number" min="0" max="10000" step="0.01" required value={messagePrice} onChange={event=>setMessagePrice(event.target.value)}/></label>}
+        {messageEnabled&&<><label>Price ({currency.trim().toUpperCase()||'ISO'})<input type="number" min="0" max="10000" step="0.01" required value={messagePrice} onChange={event=>setMessagePrice(event.target.value)}/></label><label>Expected response time<select value={messageResponseHours} onChange={event=>setMessageResponseHours(event.target.value)}>{MESSAGE_RESPONSE_OPTIONS.map(option=><option key={option.hours} value={option.hours}>{option.label}</option>)}</select><span className={s.muted}>This commitment is shown to families before they request a message consultation.</span></label></>}
         <label className={s.check}><input type="checkbox" checked={videoEnabled} onChange={event=>setVideoEnabled(event.target.checked)}/>Video consultation</label>
         {videoEnabled&&<><label>Price ({currency.trim().toUpperCase()||'ISO'})<input type="number" min="0" max="10000" step="0.01" required value={videoPrice} onChange={event=>setVideoPrice(event.target.value)}/></label><label>Duration<select value={videoMinutes} onChange={event=>setVideoMinutes(event.target.value)}><option value="20">20 minutes</option><option value="30">30 minutes</option></select></label></>}
         <label className={s.check}><input type="checkbox" checked={monthlyEnabled} onChange={event=>setMonthlyEnabled(event.target.checked)}/>Monthly plan</label>

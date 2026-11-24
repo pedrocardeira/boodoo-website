@@ -6,6 +6,7 @@ const requestFields = {
   register: ['name', 'city', 'languages', 'biography', 'registrationNumber', 'visaNumber', 'authority', 'insuranceValidUntil', 'credentialPath', 'country', 'requestedRegions'],
   setAvailability: ['acceptingPatients'],
   setPricing: ['pricing'],
+  setProfilePhoto: ['photoURL', 'photoPath'],
   schedule: [],
   saveSlots: ['slots'],
   bookings: ['asDoctor'],
@@ -33,7 +34,7 @@ export function isPortalRequest(input: unknown): input is Record<string, unknown
   return Object.keys(request).every(key => key === 'action' || allowed.includes(key));
 }
 
-const profileFields = ['uid', 'name', 'city', 'country', 'languages', 'biography', 'status', 'acceptingPatients', 'profileCode', 'pricing', 'verification'];
+const profileFields = ['uid', 'name', 'city', 'country', 'languages', 'biography', 'status', 'acceptingPatients', 'profileCode', 'photoURL', 'pricing', 'verification'];
 const verificationFields = ['registrationNumber', 'visaNumber', 'authority', 'credentialPath', 'insuranceValidUntil'];
 function select(value: unknown, fields: readonly string[]): Record<string, unknown> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
@@ -43,7 +44,7 @@ function profile(value: unknown) {
   if (!value) return null;
   const result = select(value, profileFields);
   if (result.pricing && typeof result.pricing === 'object' && !Array.isArray(result.pricing)) {
-    result.pricing = select(result.pricing, ['currency', 'messageCents', 'videoCents', 'videoMinutes', 'monthlyCents', 'cancellationPolicy']);
+    result.pricing = select(result.pricing, ['currency', 'messageCents', 'messageResponseHours', 'videoCents', 'videoMinutes', 'monthlyCents', 'cancellationPolicy']);
   } else {
     delete result.pricing;
   }
