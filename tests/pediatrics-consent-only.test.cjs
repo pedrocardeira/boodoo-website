@@ -29,10 +29,10 @@ function loadSource(file, globals = {}, stubs = {}) {
   return module.exports;
 }
 
-function proxy({ environment = 'preview', enabled = 'true', body = {}, responseStatus = 200 } = {}) {
+function proxy({ environment = 'preview', enabled = 'true', ref, body = {}, responseStatus = 200 } = {}) {
   const calls = [];
   const { POST } = loadSource('app/api/pediatrics/route.ts', {
-    process: { env: { VERCEL_ENV: environment, BOODOO_PEDIATRICS_PORTAL_ENABLED: enabled } },
+    process: { env: { VERCEL_ENV: environment, BOODOO_PEDIATRICS_PORTAL_ENABLED: enabled, VERCEL_GIT_COMMIT_REF: ref } },
     fetch: async (url, options) => {
       calls.push({ url, options });
       return Response.json(body, { status: responseStatus });
@@ -128,6 +128,12 @@ test('production, disabled preview, unauthenticated and invalid requests never r
   assert.equal((await POST(badJSON)).status, 400);
   assert.equal((await request({ action: 'register', biography: 'x'.repeat(32769) })).status, 413);
   assert.equal(calls.length, 0);
+});
+
+test('isolated Pediatrics sandbox branch remains available when Vercel preview flags lag', async () => {
+  const { request, calls } = proxy({ enabled: 'false', ref: 'codex/126-pediatrics-consent-only' });
+  assert.equal((await request({ action: 'status' })).status, 200);
+  assert.equal(calls.length, 1);
 });
 
 test('real professional overview/profile components render QR identity and consent without legacy commerce', () => {
