@@ -1,0 +1,59 @@
+name: BooDoo Preview QA
+
+on:
+  pull_request:
+    paths:
+      - 'boodoo-github-source/**'
+      - '.github/workflows/preview-qa-agent.yml'
+  push:
+    branches:
+      - codex/126-pediatrics-consent-only
+    paths:
+      - 'boodoo-github-source/**'
+      - '.github/workflows/preview-qa-agent.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: boodoo-preview-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qa:
+    name: BooDoo Preview QA
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: boodoo-github-source
+    steps:
+      - name: Check out the Vercel source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: boodoo-github-source/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Run unit and composition tests
+        run: pnpm test
+
+      - name: Build the exact Vercel source
+        run: pnpm build
+
+      - name: Smoke-test the deployed preview
+        env:
+          BOODOO_PREVIEW_URL: ${{ vars.BOODOO_PREVIEW_URL || 'https://boodoo-website-git-codex-126-ped-c9b846-pedrocardeiras-projects.vercel.app' }}
+          BOODOO_PREVIEW_ATTEMPTS: '20'
+          BOODOO_PREVIEW_RETRY_MS: '15000'
+        run: pnpm qa:preview
