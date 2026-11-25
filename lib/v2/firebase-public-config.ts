@@ -14,7 +14,10 @@ export function resolveFirebaseConfig(overrides: Partial<ClientConfig> = {}): Pa
   const supplied = Object.fromEntries(Object.entries(overrides).filter(([,value]) => Boolean(value)));
   // Never combine production credentials with an explicitly different project.
   if (overrides.projectId && overrides.projectId !== registeredWebConfig.projectId) return supplied;
-  return {...registeredWebConfig,...supplied};
+  // The registered website app is the source of truth for BooDoo. In particular,
+  // do not let a stale Vercel NEXT_PUBLIC_FIREBASE_API_KEY or appId override the
+  // valid key for this project and make every login look like invalid credentials.
+  return registeredWebConfig;
 }
 export const firebaseWebConfig = resolveFirebaseConfig({
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
