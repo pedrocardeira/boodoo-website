@@ -51,11 +51,6 @@ jobs:
       - name: Build the exact Vercel source
         run: pnpm build
 
-      - name: Start the built app for smoke testing
-        run: |
-          pnpm start -- --hostname 127.0.0.1 --port 3100 > "$RUNNER_TEMP/boodoo-preview.log" 2>&1 &
-          echo $! > "$RUNNER_TEMP/boodoo-preview.pid"
-
       - name: Smoke-test the built app
         env:
           # A repository variable can point this at a public Vercel preview.
@@ -64,7 +59,11 @@ jobs:
           BOODOO_PREVIEW_URL: ${{ vars.BOODOO_PREVIEW_URL || 'http://127.0.0.1:3100' }}
           BOODOO_PREVIEW_ATTEMPTS: '20'
           BOODOO_PREVIEW_RETRY_MS: '1000'
-        run: pnpm qa:preview
+        run: |
+          pnpm start -- --hostname 127.0.0.1 --port 3100 > "$RUNNER_TEMP/boodoo-preview.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          pnpm qa:preview
 
       - name: Upload preview server log on failure
         if: failure()
