@@ -27,7 +27,10 @@ async function checkPage(check) {
     try {
       const response = await fetch(`${baseURL}${check.path}`, { redirect: 'follow' });
       const body = await response.text();
-      const is404 = response.status === 404 || /<h1[^>]*>404<\/h1>/i.test(body) || body.includes('This page could not be found');
+      // Next embeds the generic not-found copy in client chunks even for
+      // healthy routes. Treat only an HTTP 404 or an actual 404 heading as a
+      // missing page.
+      const is404 = response.status === 404 || /<h1[^>]*>404<\/h1>/i.test(body);
       const titleMatch = body.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
       const pageTitle = titleMatch?.[1]?.replace(/<[^>]+>/g, '').replace(/&middot;|&#183;|&#xB7;/gi, '·').trim() ?? '';
       const matched = pageTitle.includes(check.title);
