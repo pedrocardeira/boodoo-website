@@ -50,7 +50,10 @@ export default function PediatricsAdmin() {
   const call = useCallback(async <T,>(action: PediatricsPortalAction, fields: Record<string, unknown> = {}): Promise<T> => {
     const current = firebaseClient().auth.currentUser;
     if (!current || current.isAnonymous) throw Error('Sign in with your BooDoo administrator account.');
-    const token = await current.getIdToken();
+    // Claims can be added or changed while a browser session is still alive.
+    // Force a refresh so an administrator is not treated as a standard user
+    // because the browser cached an older ID token.
+    const token = await current.getIdToken(true);
     const response = await fetch('/api/pediatrics', {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -115,7 +118,7 @@ export default function PediatricsAdmin() {
 
   const authenticate = async (event: FormEvent) => {
     event.preventDefault();
-    await run(async () => { const { auth } = await prepareSession(); await signInWithEmailAndPassword(auth, email, password); setPassword(''); });
+    await run(async () => { const { auth } = await prepareSession(); await signInWithEmailAndPassword(auth, email, password); await auth.currentUser?.getIdToken(true); setPassword(''); });
   };
 
   const saveFlags = async (countryCode: string | null, values: Partial<Record<AdminFlag, boolean>>) => {
