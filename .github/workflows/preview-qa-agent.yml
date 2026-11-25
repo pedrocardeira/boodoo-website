@@ -51,9 +51,25 @@ jobs:
       - name: Build the exact Vercel source
         run: pnpm build
 
-      - name: Smoke-test the deployed preview
+      - name: Start the built app for smoke testing
+        run: |
+          pnpm start -- --hostname 127.0.0.1 --port 3100 > "$RUNNER_TEMP/boodoo-preview.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/boodoo-preview.pid"
+
+      - name: Smoke-test the built app
         env:
-          BOODOO_PREVIEW_URL: ${{ vars.BOODOO_PREVIEW_URL || 'https://boodoo-website-git-codex-126-ped-c9b846-pedrocardeiras-projects.vercel.app' }}
+          # A repository variable can point this at a public Vercel preview.
+          # The default is the exact build produced by this job, so QA does
+          # not depend on Vercel preview-auth cookies or a bypass secret.
+          BOODOO_PREVIEW_URL: ${{ vars.BOODOO_PREVIEW_URL || 'http://127.0.0.1:3100' }}
           BOODOO_PREVIEW_ATTEMPTS: '20'
-          BOODOO_PREVIEW_RETRY_MS: '15000'
+          BOODOO_PREVIEW_RETRY_MS: '1000'
         run: pnpm qa:preview
+
+      - name: Upload preview server log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: boodoo-preview-server-log
+          path: ${{ runner.temp }}/boodoo-preview.log
+          if-no-files-found: ignore
