@@ -1,11 +1,21 @@
 const {test}=require('node:test');const assert=require('node:assert/strict');
-const {resolveFirebaseConfig}=require('./compiled/firebase-public-config');
+const {resolveFirebaseConfig,firebaseWebConfig}=require('./compiled/firebase-public-config');
 test('registered website configuration enables login without Vercel env overrides',()=>{
  const c=resolveFirebaseConfig({apiKey:'',authDomain:'',projectId:'boodoo-e5d55'});
  assert.equal(c.projectId,'boodoo-e5d55');assert.ok(c.apiKey);assert.match(c.appId,/:web:/);
  assert.equal(c.storageBucket,'boodoo-e5d55.firebasestorage.app');
 });
+test('stale same-project Vercel overrides cannot replace the registered credentials',()=>{
+ const c=resolveFirebaseConfig({apiKey:'stale-key',authDomain:'old.firebaseapp.com',projectId:'boodoo-e5d55',appId:'old-app'});
+ assert.equal(c.apiKey,'AIzaSyCRrupeQgkYW2YN41BhTZk6YI0F7ukAh4s');
+ assert.equal(c.authDomain,'boodoo-e5d55.firebaseapp.com');
+ assert.match(c.appId,/:web:/);
+});
 test('alternate projects never inherit production keys or app identifiers',()=>{
  const c=resolveFirebaseConfig({projectId:'demo-isolated'});
  assert.deepEqual(c,{projectId:'demo-isolated'});
+});
+test('browser client always uses the registered BooDoo project',()=>{
+ assert.equal(firebaseWebConfig.projectId,'boodoo-e5d55');
+ assert.equal(firebaseWebConfig.apiKey,'AIzaSyCRrupeQgkYW2YN41BhTZk6YI0F7ukAh4s');
 });

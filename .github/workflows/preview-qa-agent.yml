@@ -1,0 +1,78 @@
+name: BooDoo Preview QA
+
+on:
+  pull_request:
+    paths:
+      - 'boodoo-github-source/**'
+      - '.github/workflows/preview-qa-agent.yml'
+  push:
+    branches:
+      - codex/126-pediatrics-consent-only
+    paths:
+      - 'boodoo-github-source/**'
+      - '.github/workflows/preview-qa-agent.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: boodoo-preview-qa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qa:
+    name: BooDoo Preview QA
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: boodoo-github-source
+    steps:
+      - name: Check out the Vercel source
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+          cache-dependency-path: boodoo-github-source/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Run unit and composition tests
+        run: pnpm test
+
+      - name: Build the exact Vercel source
+        run: pnpm build
+
+      - name: Smoke-test the built app
+        env:
+          # A repository variable can point this at a public Vercel preview.
+          # The default is the exact build produced by this job, so QA does
+          # not depend on Vercel preview-auth cookies or a bypass secret.
+          BOODOO_PREVIEW_URL: ${{ vars.BOODOO_PREVIEW_URL || 'http://127.0.0.1:3100' }}
+          BOODOO_PREVIEW_ATTEMPTS: '20'
+          BOODOO_PREVIEW_RETRY_MS: '1000'
+        run: |
+          pnpm start --hostname 127.0.0.1 --port 3100 > "$RUNNER_TEMP/boodoo-preview.log" 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          if ! pnpm qa:preview; then
+            echo '--- BooDoo preview server log ---'
+            cat "$RUNNER_TEMP/boodoo-preview.log" || true
+            exit 1
+          fi
+
+      - name: Upload preview server log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: boodoo-preview-server-log
+          path: ${{ runner.temp }}/boodoo-preview.log
+          if-no-files-found: ignore

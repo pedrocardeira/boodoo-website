@@ -4,6 +4,8 @@ import PediatricsPortal from '@/components/pediatrics/portal';
 export const metadata:Metadata={title:'BooDoo Pediatrics · Professional portal',robots:{index:false,follow:false}};
 export const dynamic='force-dynamic';
 export default function Page(){
-  if(process.env.VERCEL_ENV==='production'||process.env.BOODOO_PEDIATRICS_PORTAL_ENABLED!=='true')notFound();
+  // This is a preview-only professional workspace. Production is the hard
+  // boundary; preview deployments must not depend on a copied Vercel flag.
+  if(process.env.VERCEL_ENV==='production')notFound();
   return <PediatricsPortal/>;
 }
