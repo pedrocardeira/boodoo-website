@@ -5,13 +5,17 @@ const delayMs = Number(process.env.BOODOO_PREVIEW_RETRY_MS || 15000);
 const checks = [
   {
     path: '/pediatrics',
-    expected: ['Care starts with trust.', 'Welcome to BooDoo Pediatrics'],
+    // This route is a client component. Its visible copy is added after
+    // hydration, so the stable server-side contract for a fetch-only smoke
+    // test is the route's metadata title.
+    title: 'BooDoo Pediatrics',
   },
   {
     path: '/pediatrics/admin',
-    // The page is client-authenticated, so the first HTML can be the loading
-    // shell. Both the loading and signed-out states are valid smoke results.
-    expected: ['Opening administration', 'BooDoo control centre', 'Administrator sign in', 'Access restricted'],
+    // The page is client-authenticated, so the signed-in/signed-out copy is
+    // intentionally not part of the fetch-only check. The preview metadata
+    // still proves that this exact route is deployed.
+    title: 'BooDoo · Administration',
   },
 ];
 
@@ -24,12 +28,14 @@ async function checkPage(check) {
       const response = await fetch(`${baseURL}${check.path}`, { redirect: 'follow' });
       const body = await response.text();
       const is404 = response.status === 404 || /<h1[^>]*>404<\/h1>/i.test(body) || body.includes('This page could not be found');
-      const matched = check.expected.some(value => body.includes(value));
+      const titleMatch = body.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
+      const pageTitle = titleMatch?.[1]?.replace(/<[^>]+>/g, '').replace(/&middot;|&#183;|&#xB7;/gi, '·').trim() ?? '';
+      const matched = pageTitle.includes(check.title);
       if (response.ok && !is404 && matched) {
-        console.log(`PASS ${check.path} (${response.status})`);
+        console.log(`PASS ${check.path} (${response.status}; title=${pageTitle})`);
         return;
       }
-      lastError = `${response.status}; matched=${matched}; 404=${is404}`;
+      lastError = `${response.status}; title=${JSON.stringify(pageTitle)}; matched=${matched}; 404=${is404}`;
     } catch (error) {
       lastError = error instanceof Error ? error.message : String(error);
     }
