@@ -63,7 +63,11 @@ jobs:
           pnpm start -- --hostname 127.0.0.1 --port 3100 > "$RUNNER_TEMP/boodoo-preview.log" 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
-          pnpm qa:preview
+          if ! pnpm qa:preview; then
+            echo '--- BooDoo preview server log ---'
+            cat "$RUNNER_TEMP/boodoo-preview.log" || true
+            exit 1
+          fi
 
       - name: Upload preview server log on failure
         if: failure()
