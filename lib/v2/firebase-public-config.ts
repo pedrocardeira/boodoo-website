@@ -19,10 +19,7 @@ export function resolveFirebaseConfig(overrides: Partial<ClientConfig> = {}): Pa
   // valid key for this project and make every login look like invalid credentials.
   return registeredWebConfig;
 }
-export const firebaseWebConfig = resolveFirebaseConfig({
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-});
+// The deployed BooDoo website must never drift to a different Firebase project
+// because of stale public Vercel variables. Alternate projects remain available
+// through resolveFirebaseConfig for isolated tests, but are always opt-in there.
+export const firebaseWebConfig = registeredWebConfig;
