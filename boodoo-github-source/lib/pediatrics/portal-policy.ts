@@ -22,6 +22,11 @@ const requestFields = {
   medicalRecords: ['linkID', 'scope'],
   reviewQueue: [],
   review: ['doctorUID', 'status', 'verificationSource', 'verificationExpiresAt', 'licensedRegions', 'identityVerified', 'licenseVerified', 'specialistVerified', 'insuranceVerified'],
+  adminConfig: [],
+  adminUpdateConfig: ['countryCode', 'enabled', 'registrationEnabled', 'clinicalEnabled', 'engagementsEnabled', 'paymentsEnabled', 'videoEnabled'],
+  adminUsers: ['search', 'pageToken', 'limit'],
+  adminDoctors: [],
+  adminAudit: [],
 } as const;
 
 export type PediatricsPortalAction = keyof typeof requestFields;
@@ -59,9 +64,23 @@ export function portalResponse(action: PediatricsPortalAction, body: unknown): u
   const value = body as Record<string, unknown>;
   if (value.error) return select(value, ['error']);
   switch (action) {
-    case 'status': return select(value, ['enabled', 'registrationEnabled', 'clinicalEnabled', 'paymentsEnabled', 'videoEnabled', 'reviewer']);
+    case 'status': return select(value, ['enabled', 'registrationEnabled', 'clinicalEnabled', 'paymentsEnabled', 'videoEnabled', 'reviewer', 'admin']);
     case 'profile': return { profile: profile(value.profile) };
     case 'reviewQueue': return { profiles: Array.isArray(value.profiles) ? value.profiles.map(profile) : [] };
+    case 'adminConfig': return {
+      config: select(value.config, ['enabled', 'registrationEnabled', 'clinicalEnabled', 'engagementsEnabled', 'paymentsEnabled', 'videoEnabled', 'countries', 'updatedAt', 'updatedBy']),
+      countries: Array.isArray(value.countries) ? value.countries.filter(country => typeof country === 'string') : [],
+    };
+    case 'adminUpdateConfig': return {
+      countryCode: typeof value.countryCode === 'string' ? value.countryCode : null,
+      config: select(value.config, ['enabled', 'registrationEnabled', 'clinicalEnabled', 'engagementsEnabled', 'paymentsEnabled', 'videoEnabled', 'countries', 'updatedAt', 'updatedBy']),
+    };
+    case 'adminUsers': return {
+      users: Array.isArray(value.users) ? value.users.map(user => select(user, ['uid', 'email', 'emailVerified', 'disabled', 'displayName', 'photoURL', 'creationTime', 'lastSignInTime', 'providerIds', 'roles', 'pediatricProfile'])) : [],
+      nextPageToken: typeof value.nextPageToken === 'string' ? value.nextPageToken : null,
+    };
+    case 'adminDoctors': return { doctors: Array.isArray(value.doctors) ? value.doctors.map(doctor => select(doctor, ['uid', 'name', 'city', 'country', 'languages', 'status', 'acceptingPatients', 'requestedRegions', 'licensedRegions', 'verificationExpiresAt', 'reviewedBy', 'reviewedAt', 'updatedAt'])) : [] };
+    case 'adminAudit': return { entries: Array.isArray(value.entries) ? value.entries.map(entry => select(entry, ['actor', 'action', 'doctorUID', 'linkID', 'bookingID', 'threadID', 'status', 'countryCode', 'granted', 'at'])) : [] };
     case 'schedule': return {
       slots: Array.isArray(value.slots) ? value.slots.map(slot => select(slot, ['id', 'startAt', 'minutes', 'bookingStatus', 'bookingID', 'holdUntil'])) : [],
       timeZone: typeof value.timeZone === 'string' ? value.timeZone : null,
